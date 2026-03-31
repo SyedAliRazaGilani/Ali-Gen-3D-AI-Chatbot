@@ -2,3 +2,7 @@ node_modules/
 .env
 .DS_Store
 *.log
+
+# Generated chat audio/lipsync artifacts (keep only curated audio files)
+audios/*_message_*
+audios/message_*
