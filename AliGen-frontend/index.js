@@ -7,6 +7,55 @@ import Groq from "groq-sdk";
 import { PollyClient, SynthesizeSpeechCommand } from "@aws-sdk/client-polly"; // AWS SDK v3 imports
 dotenv.config();
 
+// Portfolio context (single source of truth)
+let portfolioContext = "";
+const PORTFOLIO_CONTEXT_PATH = "context/portfolio.md";
+fs.readFile(PORTFOLIO_CONTEXT_PATH, "utf8")
+  .then((txt) => {
+    portfolioContext = txt;
+    console.log(`Loaded portfolio context: ${PORTFOLIO_CONTEXT_PATH}`);
+  })
+  .catch((err) => {
+    console.warn(
+      `Could not read ${PORTFOLIO_CONTEXT_PATH}. Portfolio Q&A will be weaker until you add it.`,
+      err?.message || err
+    );
+  });
+
+function extractProjectsFromContext(md) {
+  if (!md) return [];
+  const lines = md.split(/\r?\n/);
+  const isProjectsHeader = (l) => /^##\s+Projects\b/i.test(l.trim());
+  let inProjects = false;
+  const projects = [];
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!inProjects) {
+      if (isProjectsHeader(line)) inProjects = true;
+      continue;
+    }
+
+    // Stop when next section starts
+    if (/^##\s+/.test(line) && !isProjectsHeader(line)) break;
+
+    // Parse list items: "- Name — description"
+    const m = line.match(/^-\s+(.+?)\s+—\s+(.+)\s*$/);
+    if (m) {
+      projects.push({ title: m[1].trim(), summary: m[2].trim() });
+      continue;
+    }
+
+    // Fallback: "- Name"
+    const m2 = line.match(/^-\s+(.+)\s*$/);
+    if (m2) {
+      projects.push({ title: m2[1].trim(), summary: "" });
+    }
+  }
+
+  return projects;
+}
+
 // Initialize Groq
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY || "-",
@@ -85,6 +134,10 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
+app.get("/projects", (req, res) => {
+  res.json({ projects: extractProjectsFromContext(portfolioContext) });
+});
+
 
 const execCommand = (command) => {
   return new Promise((resolve, reject) => {
@@ -95,10 +148,10 @@ const execCommand = (command) => {
   });
 };
 
-const ffmpegPath = "./.local/bin/ffmpeg"; 
-const rhubarbPath = "./.local/bin/Rhubarb-Lip-Sync-1.13.0-Linux/rhubarb";
-// const ffmpegPath = process.env.FFMPEG_PATH;
-// const rhubarbPath = process.env.RHUBARB_PATH;
+// const ffmpegPath = "./.local/bin/ffmpeg"; 
+// const rhubarbPath = "./.local/bin/Rhubarb-Lip-Sync-1.13.0-Linux/rhubarb";
+const ffmpegPath = process.env.FFMPEG_PATH;
+const rhubarbPath = process.env.RHUBARB_PATH;
 
 
 // Check if the files are accessible
@@ -208,12 +261,12 @@ app.post("/chat", async (req, res) => {
       return;
     }
 
-    if (messageType === "lifechoices") {  
-      console.log("Template msg");
+    if (messageType === "about") {
+      console.log("Template msg: about");
       res.send({
         messages: [
           {
-            text: "Hey, I’m not saying your choices belong in a documentary titled ‘Questionable Life Decisions’, but let’s just say I’ve got a front-row seat and a bucket of popcorn.. Purely for research purposes, of course!",
+            text: "I’m Ali Gilani — an AI Engineer, Data Scientist, and Full‑Stack Developer based in the UK. I build production AI systems (RAG, evaluation loops, automation) and full-stack products that actually ship.",
             audio: await audioFileToBase64("audios/lifechoices.wav"),
             lipsync: await readJsonTranscript("audios/lifechoices.json"),
             facialExpression: "smile",
@@ -224,15 +277,95 @@ app.post("/chat", async (req, res) => {
       return;
     }
 
-    if (messageType === "overwhelming") {
-      console.log("Template msg");
+    if (messageType === "work") {
+      console.log("Template msg: work");
       res.send({
         messages: [
           {
-            text: "Oh, love, I wish I had some grand secret, but honestly? I take it one ridiculously small step at a time...",
+            text: "Want projects or experience? I’ve shipped apps like Nextdemy (payments + auth), Finote (mobile finance), and Next Venture (pitch platform). Ask what you want to know and I’ll point you to the best example.",
             audio: await audioFileToBase64("audios/overwhelming.wav"),
             lipsync: await readJsonTranscript("audios/overwhelming.json"),
             facialExpression: "default",
+            animation: "Salute",
+          },
+        ],
+      });
+      return;
+    }
+
+    if (messageType === "hobbies") {
+      console.log("Template msg: hobbies");
+      res.send({
+        messages: [
+          {
+            text: "Outside work I’m into chess and building systems with strong developer experience — repeatable tooling, fast feedback loops, and clean delivery.",
+            audio: await audioFileToBase64("audios/sad.wav"),
+            lipsync: await readJsonTranscript("audios/sad.json"),
+            facialExpression: "smile",
+            animation: "Stretching",
+          },
+        ],
+      });
+      return;
+    }
+
+    if (messageType === "hobbies_gaming") {
+      console.log("Template msg: hobbies_gaming");
+      res.send({
+        messages: [
+          {
+            text: "Gaming is my switch-off mode — I like anything that rewards strategy and learning curves. If you tell me the genre, I’ll recommend a few favorites.",
+            audio: await audioFileToBase64("audios/overwhelming.wav"),
+            lipsync: await readJsonTranscript("audios/overwhelming.json"),
+            facialExpression: "smile",
+            animation: "Thinking",
+          },
+        ],
+      });
+      return;
+    }
+
+    if (messageType === "hobbies_chess") {
+      console.log("Template msg: hobbies_chess");
+      res.send({
+        messages: [
+          {
+            text: "Chess keeps me sharp — patience, planning, and adapting under pressure. I’m a big fan of blitz and tactics training.",
+            audio: await audioFileToBase64("audios/sad.wav"),
+            lipsync: await readJsonTranscript("audios/sad.json"),
+            facialExpression: "smile",
+            animation: "Thinking",
+          },
+        ],
+      });
+      return;
+    }
+
+    if (messageType === "hobbies_software_solutions") {
+      console.log("Template msg: hobbies_software_solutions");
+      res.send({
+        messages: [
+          {
+            text: "I love building small software solutions for real annoyances — automation, dashboards, and tools that save time. Tell me your problem and I’ll suggest a clean approach.",
+            audio: await audioFileToBase64("audios/lifechoices.wav"),
+            lipsync: await readJsonTranscript("audios/lifechoices.json"),
+            facialExpression: "default",
+            animation: "Salute",
+          },
+        ],
+      });
+      return;
+    }
+
+    if (messageType === "hobbies_music" || messageType === "hobbies_podcast") {
+      console.log("Template msg: hobbies_podcast");
+      res.send({
+        messages: [
+          {
+            text: "Podcasts are my background fuel — I’m usually listening while building. If you tell me what you’re into, I’ll share what I’ve been looping lately.",
+            audio: await audioFileToBase64("audios/overwhelming.wav"),
+            lipsync: await readJsonTranscript("audios/overwhelming.json"),
+            facialExpression: "smile",
             animation: "Idle",
           },
         ],
@@ -240,16 +373,20 @@ app.post("/chat", async (req, res) => {
       return;
     }
 
-    if (messageType === "sad") {
-      console.log("Template msg");
+    if (messageType === "projects") {
+      console.log("Template msg: projects");
+      const projects = extractProjectsFromContext(portfolioContext);
+      const names = projects.slice(0, 4).map((p) => p.title).filter(Boolean);
       res.send({
         messages: [
           {
-            text: "Alright, spill the beans. What's got you feeling like a soggy biscuit?",
-            audio: await audioFileToBase64("audios/sad.wav"),
-            lipsync: await readJsonTranscript("audios/sad.json"),
-            facialExpression: "default",
-            animation: "Sad",
+            text: names.length
+              ? `Here are a few projects you can explore: ${names.join(", ")}. Want the tech stack or what I built in any of them?`
+              : "I can show you my projects—add them to the Projects section in my portfolio context file and I’ll surface them here.",
+            audio: await audioFileToBase64("audios/overwhelming.wav"),
+            lipsync: await readJsonTranscript("audios/overwhelming.json"),
+            facialExpression: "smile",
+            animation: "Thinking",
           },
         ],
       });
@@ -267,10 +404,16 @@ app.post("/chat", async (req, res) => {
 
     try {
           const prompt = `
+          PORTFOLIO CONTEXT (SOURCE OF TRUTH):
+          ${portfolioContext || "[No portfolio context loaded]"}
+
           Chat History:
         ${chatHistoryText}
       
-        You are a close friend who is helpful, empathetic sarcastic and carries conversations. You must remember the topic user is talking about and not repeat anything from the Chat History.
+        You are AliGen, a portfolio assistant for Ali Gilani.
+        You must answer ONLY using the PORTFOLIO CONTEXT above.
+        If the user asks something not in the context, say you don't have that info and offer contact@aligilani.com.
+        Keep responses short, clear, and helpful.
         Rules:
         1. Do NOT start new messages with any repetitive phrase or starting words present in Chat History.
         2. Do NOT end any sentence with "isn't it" or similar repetitive present in Chat History.
@@ -366,37 +509,29 @@ app.post("/chat", async (req, res) => {
           console.log(`Error converting text to speech for message ${i}:`, error);
           return res.status(500).send({ error: `Failed to convert text to speech for message ${i}.` });
         }
-      
+
+        // Always return audio if Polly succeeded.
         try {
-          // Perform lip sync on the audio file
-          await lipSyncMessage(userId, i);
-        } catch (error) {
-          console.log(`Error during lip sync for message ${i}:`, error);
-          return res.status(500).send({ error: `Failed to perform lip sync for message ${i}.` });
-        }
-      
-        try {
-          // Convert audio file to Base64
           message.audio = await audioFileToBase64(fileName);
         } catch (error) {
           console.log(`Error converting audio to Base64 for message ${i}:`, error);
           return res.status(500).send({ error: `Failed to convert audio to Base64 for message ${i}.` });
         }
-      
+
+        // Lip-sync is best-effort (FFmpeg/Rhubarb may be missing on Windows).
         try {
-          // Read lip sync JSON transcript
+          await lipSyncMessage(userId, i);
           message.lipsync = await readJsonTranscript(`audios/${userId}_message_${i}.json`);
         } catch (error) {
-          console.log(`Error reading lipsync JSON for message ${i}:`, error);
-          return res.status(500).send({ error: `Failed to read lipsync JSON for message ${i}.` });
+          console.log(`Lip-sync unavailable for message ${i} (continuing without it):`, error?.message || error);
+          message.lipsync = null;
         }
-      
+
+        // Cleanup is also best-effort.
         try {
-          // Remove audio files after use
           await removeAudioFiles(userId, i);
         } catch (error) {
-          console.log(`Error removing audio files for message ${i}:`, error);
-          return res.status(500).send({ error: `Failed to remove audio files for message ${i}.` });
+          console.log(`Error removing audio files for message ${i} (ignored):`, error?.message || error);
         }
       }
       
