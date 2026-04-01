@@ -119,8 +119,57 @@ Set **`VITE_API_URL`** in `AliGen-frontend/.env` to your BFF origin (e.g. `http:
 
 ## ☁️ Deploy Notes
 
-- **Static frontend (e.g. Render):** set service **root** to `AliGen-frontend`, build `yarn install && yarn build`, publish `dist`. See `AliGen-frontend/render.yaml`.
-- **BFF:** run `node index.js` (or `yarn start`) on a Node host; point `VITE_API_URL` at that origin.
+### Frontend (e.g. Render)
+
+Set service **root** to `AliGen-frontend`, build `yarn install && yarn build`, publish `dist`. See `AliGen-frontend/render.yaml`.
+
+### Backend on Railway (Express BFF)
+
+These steps deploy **`AliGen-backend`** only (the API that serves `/chat`, `/projects`, `/blogs`, `/work`).
+
+1. **Create a Railway project**  
+   In [Railway](https://railway.app), **New Project** → **Deploy from GitHub** → select this repository.
+
+2. **Point the service at the backend folder (monorepo)**  
+   Open the service → **Settings** → **Root Directory** → set to **`AliGen-backend`**.  
+   This makes installs and `node index.js` run from the folder that contains `package.json` and `index.js`.
+
+3. **Build & start (usually auto-detected)**  
+   - **Build command** (if Railway asks): `yarn install`  
+     - If you use Yarn Berry and builds fail, try: `corepack enable && yarn install`  
+   - **Start command:** `yarn start` (runs `node index.js` per `package.json`)  
+   Railway injects **`PORT`** automatically — the app listens on `process.env.PORT` (with a local fallback to `3000`).
+
+4. **Environment variables** (service → **Variables**)
+
+   | Variable | Required | Notes |
+   |----------|----------|--------|
+   | `PORT` | No | Set by Railway; do not override unless you know you need to. |
+   | `GROQ_API_KEY` | Yes | Groq API key for typed chat. |
+   | `AWS_ACCESS_KEY_ID` | Yes* | Amazon Polly for TTS on typed replies. |
+   | `AWS_SECRET_ACCESS_KEY` | Yes* | |
+   | `AWS_REGION` | Yes* | e.g. `us-east-1` |
+   | `FRONTEND_URL` | **Recommended** | Your deployed Vite site origin, e.g. `https://your-app.onrender.com` — used for **CORS**. Using your real frontend URL avoids issues with `credentials: true` in the browser. If unset, the server falls back to `*` (ok for quick tests, not ideal for production). |
+
+   \*Required if you want **voice on free-typed messages**. Template button responses use files under `audios/` and do not call Polly.
+
+5. **Deploy & get the URL**  
+   After deploy, open **Settings → Networking → Generate Domain** (or attach a custom domain). Copy the public URL (e.g. `https://your-service.up.railway.app`).
+
+6. **Point the frontend at Railway**  
+   In **`AliGen-frontend/.env`** (or your host’s env UI), set:
+
+   ```bash
+   VITE_API_URL=https://your-service.up.railway.app
+   ```
+
+   Rebuild/redeploy the frontend so the browser calls the Railway BFF.
+
+7. **FFmpeg / Rhubarb (optional)**  
+   The BFF can run **FFmpeg** and **Rhubarb** for lip-sync on Polly-generated audio. The default Railway Node image may **not** include those binaries. If lip-sync fails in logs, typed chat may still return audio with `lipsync: null`. To enable Rhubarb on Railway you’d add a **Dockerfile** or **Nixpacks** config that installs them — not required for a first deploy.
+
+8. **Health check**  
+   There is no dedicated `/health` route yet; Railway can use the default **TCP** check on `PORT` or hit `GET /projects` once the service is up.
 
 ---
 

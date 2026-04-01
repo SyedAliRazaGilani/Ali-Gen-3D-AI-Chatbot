@@ -227,9 +227,8 @@ const pollyClient = new PollyClient({
 
 const app = express();
 app.use(express.json());
-const port = process.env.PORT;
-
-// const port = 3000;
+// Railway and most PaaS set PORT; default for local dev.
+const port = process.env.PORT || 3000;
 
 // app.use(cors());
 
