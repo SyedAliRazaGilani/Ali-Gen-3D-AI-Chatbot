@@ -11,12 +11,12 @@ const CARD_SURFACE =
 const STORIES = {
   face: {
     title: "My Face",
-    glow: "shadow-[0_0_60px_rgba(139,92,246,0.35)]",
+    glow: "shadow-[0_0_80px_rgba(139,92,246,0.22)]",
     photo: aliImg,
     photoAlt: "Ali Gilani",
     hidePhoto: false,
-    /** narrow framed photo (object-contain) */
-    photoStyle: "boxed",
+    /** split hero + copy (not generic boxed/cover) */
+    layout: "split-profile",
     lines: [
       "Hi, I'm Ali 👋 — this is my face.",
       "I came up with the idea of making a 3D online AI assistant that looks just like me and answers people's questions about me.",
@@ -110,7 +110,8 @@ export default function NavStoryPopup({ open, variant, onClose }) {
 
   const hasCards = Array.isArray(story.useCaseCards) && story.useCaseCards.length > 0;
   const hasTech = Array.isArray(story.techItems) && story.techItems.length > 0;
-  const showPhoto = story.photo && story.hidePhoto !== true;
+  const isSplitFace = story.layout === "split-profile";
+  const showPhoto = story.photo && story.hidePhoto !== true && !isSplitFace;
 
   const modal = (
     <AnimatePresence
@@ -139,7 +140,11 @@ export default function NavStoryPopup({ open, variant, onClose }) {
             transition={{ duration: 0.28, ease: "easeOut" }}
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
-            className={`relative w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl max-h-[min(92vh,860px)] flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/12 bg-[#0c0c10] pointer-events-auto ${story.glow}`}
+            className={`relative w-full max-h-[min(92vh,860px)] flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl border border-white/12 pointer-events-auto ${
+              isSplitFace
+                ? "max-w-[min(92vw,640px)] md:max-w-[720px] bg-[#09090d] " + story.glow
+                : "max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl bg-[#0c0c10] " + story.glow
+            }`}
           >
             <button
               type="button"
@@ -150,10 +155,75 @@ export default function NavStoryPopup({ open, variant, onClose }) {
               }}
               onPointerDown={(e) => e.stopPropagation()}
               aria-label="Close"
-              className="absolute top-3 right-3 z-[60] rounded-full bg-black/50 p-2.5 text-white backdrop-blur-md hover:bg-black/65 transition-colors pointer-events-auto cursor-pointer border border-white/15"
+              className={`absolute top-3 right-3 z-[60] rounded-full p-2.5 text-white backdrop-blur-md transition-colors pointer-events-auto cursor-pointer border ${
+                isSplitFace
+                  ? "bg-white/10 border-white/20 hover:bg-white/15"
+                  : "bg-black/50 border-white/15 hover:bg-black/65"
+              }`}
             >
               <X className="w-5 h-5" strokeWidth={2.25} />
             </button>
+
+            {isSplitFace ? (
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain md:grid md:grid-cols-[0.95fr_1.1fr] md:items-stretch">
+                <div className="relative flex flex-col items-center justify-center px-8 pb-8 pt-16 md:px-10 md:py-12 md:pt-12 border-b border-white/[0.08] md:border-b-0 md:border-r">
+                  <div
+                    className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_20%,rgba(139,92,246,0.22),transparent_65%),radial-gradient(ellipse_60%_50%_at_80%_80%,rgba(6,182,212,0.08),transparent_55%)]"
+                    aria-hidden
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.92, y: 12 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative z-[1]"
+                  >
+                    <div className="rounded-[1.35rem] bg-gradient-to-br from-violet-400/90 via-fuchsia-500/75 to-cyan-400/50 p-[2px] shadow-[0_20px_60px_-15px_rgba(139,92,246,0.55)]">
+                      <div className="overflow-hidden rounded-[1.28rem] bg-[#0a0a0f]">
+                        <img
+                          src={story.photo}
+                          alt={story.photoAlt || ""}
+                          className="aspect-square h-[min(52vw,220px)] w-[min(52vw,220px)] sm:h-56 sm:w-56 md:h-64 md:w-64 object-cover object-[center_15%]"
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                  <p className="relative z-[1] mt-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white">
+                    Ali Gilani
+                  </p>
+                </div>
+
+                <div className="flex flex-col justify-center gap-5 px-6 py-8 sm:px-8 sm:py-10 md:py-12">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white">
+                      Portfolio avatar
+                    </p>
+                    <h2
+                      id="nav-story-title"
+                      className="mt-2 text-2xl font-semibold tracking-tight text-white sm:text-[1.65rem]"
+                    >
+                      {story.title}
+                    </h2>
+                  </div>
+                  <div className="flex flex-col gap-4">
+                    {story.lines.map((line, i) => (
+                      <motion.p
+                        key={i}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.08 + i * 0.06, duration: 0.25, ease: "easeOut" }}
+                        className={
+                          i === 0
+                            ? "text-[17px] font-medium leading-snug text-white sm:text-lg"
+                            : "text-[15px] leading-relaxed text-white sm:text-[15px]"
+                        }
+                      >
+                        {line}
+                      </motion.p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             {showPhoto && story.photoStyle === "cover" ? (
               <div className="relative w-full shrink-0 h-[min(38vh,260px)] sm:h-[min(42vh,300px)] md:h-[min(44vh,320px)] overflow-hidden">
@@ -183,6 +253,7 @@ export default function NavStoryPopup({ open, variant, onClose }) {
               </div>
             ) : null}
 
+            {!isSplitFace ? (
             <div
               className={`flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-5 pb-6 sm:px-7 sm:pb-7 md:px-8 pointer-events-auto ${
                 showPhoto && story.photoStyle === "cover"
@@ -259,6 +330,7 @@ export default function NavStoryPopup({ open, variant, onClose }) {
                 </div>
               ) : null}
             </div>
+            ) : null}
           </motion.div>
         </motion.div>
       ) : null}

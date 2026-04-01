@@ -225,7 +225,9 @@ export default function AliGenNavbar({ navLogo, isDarkMode, setIsDarkMode }) {
         </div>
 
         <a
-          href="mailto:contact@aligilani.com"
+          href={`${SITE}/Contact`}
+          target="_blank"
+          rel="noreferrer"
           className="shrink-0 rounded-full border border-black/15 bg-white px-3 py-1.5 lg:px-3.5 lg:py-2 xl:px-4 text-sm xl:text-[15px] font-semibold text-black hover:bg-neutral-100 transition-colors"
         >
           Book a Call
