@@ -1,4 +1,4 @@
-# Vite static site — source folder in repo: AliGen-frontend (after folder rename).
+# Vite static site — Render root directory should be this folder (AliGen-frontend).
 services:
   - name: AliGen-frontend
     type: web
