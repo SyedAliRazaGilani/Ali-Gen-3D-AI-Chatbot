@@ -1,18 +1,37 @@
-# AliGen
+# AliGen-3D-AI-Chatbot
 
-Avaturn T2 (visemes/blendshapes) + Three.js/React scene with animations and lip-sync.
+3D AI chatbot with an Avaturn avatar (GLB), lip-sync (Rhubarb cues → visemes), and animation clips.
 
-## Dev
+## Run locally
 
-Frontend (Vite):
+### Frontend (Vite)
 
-- `cd AliGen-backend`
-- `yarn install`
-- `yarn dev`
+```bash
+cd AliGen-backend
+yarn install
+yarn dev
+```
 
-Backend (Express):
+### Backend (Express)
 
-- `cd AliGen-frontend`
-- `yarn install`
-- `yarn dev`
+```bash
+cd AliGen-frontend
+yarn install
+yarn dev
+```
+
+## Environment variables
+
+Backend expects (set in `AliGen-frontend/.env`):
+
+- `PORT`
+- `GROQ_API_KEY`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`
+- (optional) `FRONTEND_URL`
+
+Frontend expects (set in `AliGen-backend/.env`):
+
+- `VITE_API_URL`
 

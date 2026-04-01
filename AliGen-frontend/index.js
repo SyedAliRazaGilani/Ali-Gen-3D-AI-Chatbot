@@ -185,7 +185,7 @@ app.post("/chat", async (req, res) => {
             audio: await audioFileToBase64("audios/introduction.wav"),
             lipsync: await readJsonTranscript("audios/introduction.json"),
             facialExpression: "default",
-            animation: "Talking_1",
+            animation: "Thinking",
           },
         ],
       });
@@ -217,7 +217,7 @@ app.post("/chat", async (req, res) => {
             audio: await audioFileToBase64("audios/lifechoices.wav"),
             lipsync: await readJsonTranscript("audios/lifechoices.json"),
             facialExpression: "smile",
-            animation: "Talking_1",
+            animation: "Thinking",
           },
         ],
       });
@@ -249,7 +249,7 @@ app.post("/chat", async (req, res) => {
             audio: await audioFileToBase64("audios/sad.wav"),
             lipsync: await readJsonTranscript("audios/sad.json"),
             facialExpression: "default",
-            animation: "Rumba",
+            animation: "Sad",
           },
         ],
       });
@@ -280,7 +280,7 @@ app.post("/chat", async (req, res) => {
         6. Always reply with a JSON array of messages, with a maximum of 1 message.
         7. Each message must have text, facialExpression, and animation properties.
         8. The available facial expressions are: smile, sad, angry, surprised, and default.
-        9. The available animations are: Talking_1, Crying, Laughing, Rumba, Idle, Terrified, and Angry.
+        9. The available animations are: Angry, Bicep, Idle, Laughing, Sad, Salute, Stretching, Surprised, Thinking.
       
         Chat History:
         ${chatHistoryText}
@@ -319,6 +319,23 @@ app.post("/chat", async (req, res) => {
       if (messages.messages) {
         messages = messages.messages;
       }
+
+      // Ensure animation name is one of the supported clips.
+      const allowedAnimations = new Set([
+        "Angry",
+        "Bicep",
+        "Idle",
+        "Laughing",
+        "Sad",
+        "Salute",
+        "Stretching",
+        "Surprised",
+        "Thinking",
+      ]);
+      messages = messages.map((m) => ({
+        ...m,
+        animation: allowedAnimations.has(m.animation) ? m.animation : "Idle",
+      }));
 
       console.log("Adding bot response to chat history");
       messages.forEach((message) => {
