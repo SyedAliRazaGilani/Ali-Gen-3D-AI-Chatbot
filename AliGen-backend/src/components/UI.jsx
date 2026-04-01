@@ -207,10 +207,10 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
 
   return (
   <>
-    <header className="backdrop-blur-3xl z-20 transition-all duration-300 font-sans">
+    <header className="backdrop-blur-3xl z-20 w-full max-w-full overflow-x-hidden font-sans">
     {/* Announcement Bar */}
     <div
-      className={`flex justify-center items-center py-3 text-white text-sm gap-3 font-sans font-medium transition-colors duration-300 ${
+      className={`flex w-full max-w-full min-w-0 flex-nowrap justify-center items-center py-3 px-2 text-white text-sm gap-3 font-sans font-medium transition-colors duration-300 ${
         isDarkMode ? "bg-neutral-950" : "bg-black"
       }`}
     >
@@ -778,13 +778,14 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
         bottom: "6.5rem",
         left: "50%",
         transform: "translateX(-50%)",
-        width: "min(900px, 92vw)",
+        width: "min(800px, 92vw)",
         pointerEvents: "auto",
       }}
     >
       <div className="flex items-center justify-between mb-3 px-1">
-        <div className="text-white font-bold text-xl">Hobbies</div>
+        <div className="text-white font-bold text-lg md:text-xl">Hobbies</div>
         <button
+          type="button"
           onClick={() => setShowHobbies(false)}
           className="rounded-full bg-black px-4 py-2 text-white font-medium border border-white/15 hover:bg-black/80 transition-colors"
         >
@@ -792,44 +793,56 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
         </button>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        {[
-          { label: "Gaming", type: "hobbies_gaming", openGamingCard: true },
-          { label: "Chess", type: "hobbies_chess", openChessCard: true },
-          { label: "Software Solutions", type: "hobbies_software_solutions", openSoftwareCard: true },
-          { label: "Podcast", type: "hobbies_podcast", openPodcastCard: true },
-        ].map((b) => (
-          <button
-            key={b.type}
-            onClick={() => {
-              if (b.openGamingCard) {
-                setShowGamingCard(true);
-              }
-              if (b.openChessCard) {
-                setShowChessCard(true);
-              }
-              if (b.openPodcastCard) {
-                setShowPodcastCard(true);
-              }
-              if (b.openSoftwareCard) {
-                setShowSoftwareCard(true);
-              }
-              if (!loading[userId] && !message) {
-                setLoading((prevState) => ({ ...prevState, [userId]: true }));
-                chat("", b.type);
-                setIsChatVisible(true);
-                localStorage.setItem("audioUnlocked", "true");
-                window.dispatchEvent(new Event("storage"));
-              }
-            }}
-            className="relative inline-flex overflow-hidden rounded-full p-[2px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-          >
-            <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-            <span className="relative inline-flex cursor-pointer items-center justify-center rounded-full bg-gray-200 px-6 py-3 text-black font-sans font-medium backdrop-blur-3xl">
-              {b.label}
-            </span>
-          </button>
-        ))}
+      <div className="w-full max-w-[42rem] mx-auto flex flex-col items-center gap-3">
+        <div className="grid grid-cols-2 gap-3 w-full">
+          {[
+            {
+              label: "Gaming",
+              type: "hobbies_gaming",
+              open: () => setShowGamingCard(true),
+            },
+            {
+              label: "Chess",
+              type: "hobbies_chess",
+              open: () => setShowChessCard(true),
+            },
+            {
+              label: "Software Solutions",
+              type: "hobbies_software_solutions",
+              open: () => setShowSoftwareCard(true),
+            },
+            {
+              label: "Podcast",
+              type: "hobbies_podcast",
+              open: () => setShowPodcastCard(true),
+            },
+          ].map((b) => (
+            <div
+              key={b.type}
+              className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-xl p-2.5 sm:p-3 lg:rounded-2xl lg:p-2.5 text-white flex flex-col items-center text-center gap-2 sm:gap-2 min-h-[6rem] sm:min-h-[6.25rem] lg:min-h-[6.25rem]"
+            >
+              <div className="font-bold text-xs leading-snug sm:text-sm lg:text-sm line-clamp-2 w-full shrink-0">
+                {b.label}
+              </div>
+              <div className="flex w-full justify-center sm:flex-1 sm:items-center sm:min-h-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Hobbies voice line plays once from the main "Hobbies" chip (messageType "hobbies").
+                    // Sub-cards only open detail panels — no second /chat call.
+                    b.open();
+                    setIsChatVisible(true);
+                    localStorage.setItem("audioUnlocked", "true");
+                    window.dispatchEvent(new Event("storage"));
+                  }}
+                  className="rounded-full bg-white/15 hover:bg-white/25 px-2 py-0.5 sm:px-2.5 sm:py-1 lg:px-2.5 text-white font-medium border border-white/20 transition-colors text-[11px] sm:text-xs lg:text-xs"
+                >
+                  Details
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )}

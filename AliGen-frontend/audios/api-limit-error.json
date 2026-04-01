@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "soundFile": "api-limit-error.wav",
+    "soundFileDuration": 6.922449
+  },
+  "mouthCues": [
+    { "start": 0, "end": 0.346122, "value": "X" },
+    { "start": 0.346122, "end": 0.692244, "value": "D" },
+    { "start": 0.692244, "end": 1.038366, "value": "C" },
+    { "start": 1.038366, "end": 1.384488, "value": "B" },
+    { "start": 1.384488, "end": 1.73061, "value": "H" },
+    { "start": 1.73061, "end": 2.076732, "value": "E" },
+    { "start": 2.076732, "end": 2.422854, "value": "F" },
+    { "start": 2.422854, "end": 2.768976, "value": "C" },
+    { "start": 2.768976, "end": 3.115098, "value": "D" },
+    { "start": 3.115098, "end": 3.46122, "value": "G" },
+    { "start": 3.46122, "end": 3.807342, "value": "C" },
+    { "start": 3.807342, "end": 4.153464, "value": "E" },
+    { "start": 4.153464, "end": 4.499586, "value": "H" },
+    { "start": 4.499586, "end": 4.845708, "value": "B" },
+    { "start": 4.845708, "end": 5.19183, "value": "A" },
+    { "start": 5.19183, "end": 5.537952, "value": "C" },
+    { "start": 5.537952, "end": 5.884074, "value": "X" },
+    { "start": 5.884074, "end": 6.230196, "value": "D" },
+    { "start": 6.230196, "end": 6.576318, "value": "C" },
+    { "start": 6.576318, "end": 6.922449, "value": "B" }
+  ]
+}

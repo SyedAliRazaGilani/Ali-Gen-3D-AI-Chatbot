@@ -136,8 +136,8 @@ const App = () => {
 
   return (
     <div
-      className="overflow-hidden h-full bg-cover bg-center font-sans antialiased"
-      style={{ position: "relative", height: "100vh", width: "100vw" }}
+      className="overflow-hidden h-full max-w-full bg-cover bg-center font-sans antialiased"
+      style={{ position: "relative", height: "100vh", width: "100%", maxWidth: "100%" }}
     >
       {/* Preloader */}
       {showPreloader && (
@@ -147,7 +147,17 @@ const App = () => {
       )}
 
       {/* UI Components */}
-      <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 50 }}>
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          maxWidth: "100%",
+          height: "100%",
+          zIndex: 50,
+        }}
+      >
       <Leva hidden />
       <UI
         isDarkMode={isDarkMode}
@@ -164,8 +174,17 @@ const App = () => {
       </div>
 
       {/* Background */}
-      <div style={{ position: "fixed", top: 0, left:0,    width: "100vw", 
-        height: "100vh",zIndex: 20, overflow: "hidden" }}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          maxWidth: "100%",
+          height: "100vh",
+          zIndex: 20,
+          overflow: "hidden",
+        }}
         className="overflow-hidden h-full bg-cover bg-center">
        
         {isGradientBg ? (

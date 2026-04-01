@@ -135,13 +135,26 @@ const Model= ({audioRef}) => {
 
     setAnimation(message.animation);
     setFacialExpression(message.facialExpression);
-    setLipsync(message.lipsync);
+    const safeLipsync =
+      message.lipsync && Array.isArray(message.lipsync.mouthCues)
+        ? message.lipsync
+        : null;
+    setLipsync(safeLipsync);
 
-    const audioBlob = new Blob(
-      [Uint8Array.from(atob(message.audio), (c) => c.charCodeAt(0))],
-      { type: "audio/mp3" }
-    );
-    const audioURL = URL.createObjectURL(audioBlob);
+    if (!message.audio || typeof message.audio !== "string") {
+      console.error("Model: missing or invalid message.audio; skipping playback");
+      return;
+    }
+
+    let audioURL;
+    try {
+      const bytes = Uint8Array.from(atob(message.audio), (c) => c.charCodeAt(0));
+      const audioBlob = new Blob([bytes], { type: "audio/mpeg" });
+      audioURL = URL.createObjectURL(audioBlob);
+    } catch (e) {
+      console.error("Model: failed to decode audio base64", e);
+      return;
+    }
 
     const audio = audioRef.current;
     audio.src = audioURL;
@@ -287,7 +300,13 @@ const Model= ({audioRef}) => {
       if (blinkRightKey) lerpMorphTarget(blinkRightKey, blink || winkRight ? 1 : 0, 0.5);
 
       // LIPSYNC logic
-      if (!setupMode && message && lipsync && audioRef.current) {
+      if (
+        !setupMode &&
+        message &&
+        lipsync &&
+        Array.isArray(lipsync.mouthCues) &&
+        audioRef.current
+      ) {
         const audio = audioRef.current;
         const currentAudioTime = audio.currentTime;
 

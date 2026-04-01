@@ -127,11 +127,17 @@ export const ChatProvider = ({ children }) => {
         return;
       }
 
-      console.log("useChat.jsx: Received response from backend:", resp.messages);
-      
-         // Update messages per user
-      setMessages((prevMessages) => ({...prevMessages,
-        [userId]: [...(prevMessages[userId] || []), ...resp.messages],
+      const incoming = Array.isArray(resp.messages) ? resp.messages : [];
+      if (incoming.length === 0) {
+        console.warn("useChat: success response had no messages array; skipping queue update");
+        return;
+      }
+
+      console.log("useChat.jsx: Received response from backend:", incoming);
+
+      setMessages((prevMessages) => ({
+        ...prevMessages,
+        [userId]: [...(prevMessages[userId] || []), ...incoming],
       }));
 
       // ✅ Increment queryCount **only if request is successful**

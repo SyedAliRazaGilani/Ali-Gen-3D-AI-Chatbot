@@ -30,10 +30,10 @@ try {
   console.log(`Loaded portfolio LLM context: ${PORTFOLIO_LLM_PATH}`);
 } catch (err) {
   console.warn(
-    `Could not read ${PORTFOLIO_LLM_PATH}. Using site portfolio for LLM prompts (larger context). Add ${PORTFOLIO_LLM_PATH} to slim chat context.`,
+    `Could not read ${PORTFOLIO_LLM_PATH}. LLM text chat will use empty context (no fallback to portfolio.md — keeps token cost low).`,
     err?.message || err
   );
-  portfolioLlmContext = portfolioSiteMd;
+  portfolioLlmContext = "";
 }
 
 function extractProjectsFromContext(md) {
@@ -366,7 +366,7 @@ const textToSpeechPolly = async (text, fileName) => {
   const params = {
     Text: text,
     OutputFormat: "mp3",
-    VoiceId: "Joanna", // You can change the voice (e.g., "Matthew", "Joanna")
+    VoiceId: "Matthew",
   };
 
   const command = new SynthesizeSpeechCommand(params);
@@ -396,11 +396,11 @@ app.post("/chat", async (req, res) => {
       res.send({
         messages: [
           {
-            text: "You know you have to type words in that chatbox right?",
-            audio: await audioFileToBase64("audios/introduction.wav"),
-            lipsync: await readJsonTranscript("audios/introduction.json"),
+            text: "Hi, you have to type something in the chatbox",
+            audio: await audioFileToBase64("audios/no-msg-sent.wav"),
+            lipsync: await readJsonTranscript("audios/no-msg-sent.json"),
             facialExpression: "default",
-            animation: "Thinking",
+            animation: "Stretching",
           },
         ],
       });
@@ -412,9 +412,9 @@ app.post("/chat", async (req, res) => {
       res.send({
         messages: [
           {
-            text: "Hey fellow developer, props to you for building this project! But you do have to get API keys. cheers!",
-            audio: await audioFileToBase64("audios/apikeys.wav"),
-            lipsync: await readJsonTranscript("audios/apikeys.json"),
+            text: "Hey fellow developer, props to you for building the project. You have to get your own API keys now.",
+            audio: await audioFileToBase64("audios/no-api-keys.wav"),
+            lipsync: await readJsonTranscript("audios/no-api-keys.json"),
             facialExpression: "angry",
             animation: "Angry",
           },
@@ -423,16 +423,17 @@ app.post("/chat", async (req, res) => {
       return;
     }
 
+    // Nav template clicks (about, work, hobbies, …): pre-built WAV + lipsync JSON only — no Groq, no Polly on these paths.
     if (messageType === "about") {
       console.log("Template msg: about");
       res.send({
         messages: [
           {
-            text: "I’m Ali Gilani — an AI Engineer, Data Scientist, and Full‑Stack Developer based in the UK. I build production AI systems (RAG, evaluation loops, automation) and full-stack products that actually ship.",
-            audio: await audioFileToBase64("audios/lifechoices.wav"),
-            lipsync: await readJsonTranscript("audios/lifechoices.json"),
+            text: "Hi I am Ali, an AI Software Engineer and Data Scientist who has been building production-ready software, data pipelines, and AI systems across leading UK and US corporations for the past 5 years. I build engaging systems that deliver value and have a Master’s in Data Science and a strong full-stack background.",
+            audio: await audioFileToBase64("audios/about-me.wav"),
+            lipsync: await readJsonTranscript("audios/about-me.json"),
             facialExpression: "smile",
-            animation: "Thinking",
+            animation: "Idle",
           },
         ],
       });
@@ -444,11 +445,11 @@ app.post("/chat", async (req, res) => {
       res.send({
         messages: [
           {
-            text: "Want projects or experience? I’ve shipped apps like Nextdemy (payments + auth), Finote (mobile finance), and Next Venture (pitch platform). Ask what you want to know and I’ll point you to the best example.",
-            audio: await audioFileToBase64("audios/overwhelming.wav"),
-            lipsync: await readJsonTranscript("audios/overwhelming.json"),
+            text: "I have built and delivered software and data-driven solutions across multiple organisations, working as a Software Engineer at SochTekkkk technologies, Ragzon Solutions, and then i2c Inc., followed by machine learning research at Brunel University. I now work at SAP Faioneer as Technology Consultant, delivering enterprise-scale solutions in partnership with Nationwide Building Society in the UK.",
+            audio: await audioFileToBase64("audios/work.wav"),
+            lipsync: await readJsonTranscript("audios/work.json"),
             facialExpression: "default",
-            animation: "Salute",
+            animation: "Idle",
           },
         ],
       });
@@ -460,9 +461,9 @@ app.post("/chat", async (req, res) => {
       res.send({
         messages: [
           {
-            text: "Outside work I’m into chess and building systems with strong developer experience — repeatable tooling, fast feedback loops, and clean delivery.",
-            audio: await audioFileToBase64("audios/sad.wav"),
-            lipsync: await readJsonTranscript("audios/sad.json"),
+            text: "I enjoy building end-to-end software solutions that are engaging and create real value for businesses. Outside of work, I’m an active chess player and was the Chess Captain at my university. I also enjoy playing Counter-Strike and listening to podcasts that broaden my perspective.",
+            audio: await audioFileToBase64("audios/hobbies.wav"),
+            lipsync: await readJsonTranscript("audios/hobbies.json"),
             facialExpression: "smile",
             animation: "Stretching",
           },
@@ -471,82 +472,14 @@ app.post("/chat", async (req, res) => {
       return;
     }
 
-    if (messageType === "hobbies_gaming") {
-      console.log("Template msg: hobbies_gaming");
-      res.send({
-        messages: [
-          {
-            text: "Gaming is my switch-off mode — I like anything that rewards strategy and learning curves. If you tell me the genre, I’ll recommend a few favorites.",
-            audio: await audioFileToBase64("audios/overwhelming.wav"),
-            lipsync: await readJsonTranscript("audios/overwhelming.json"),
-            facialExpression: "smile",
-            animation: "Thinking",
-          },
-        ],
-      });
-      return;
-    }
-
-    if (messageType === "hobbies_chess") {
-      console.log("Template msg: hobbies_chess");
-      res.send({
-        messages: [
-          {
-            text: "Chess keeps me sharp — patience, planning, and adapting under pressure. I’m a big fan of blitz and tactics training.",
-            audio: await audioFileToBase64("audios/sad.wav"),
-            lipsync: await readJsonTranscript("audios/sad.json"),
-            facialExpression: "smile",
-            animation: "Thinking",
-          },
-        ],
-      });
-      return;
-    }
-
-    if (messageType === "hobbies_software_solutions") {
-      console.log("Template msg: hobbies_software_solutions");
-      res.send({
-        messages: [
-          {
-            text: "I love building small software solutions for real annoyances — automation, dashboards, and tools that save time. Tell me your problem and I’ll suggest a clean approach.",
-            audio: await audioFileToBase64("audios/lifechoices.wav"),
-            lipsync: await readJsonTranscript("audios/lifechoices.json"),
-            facialExpression: "default",
-            animation: "Salute",
-          },
-        ],
-      });
-      return;
-    }
-
-    if (messageType === "hobbies_music" || messageType === "hobbies_podcast") {
-      console.log("Template msg: hobbies_podcast");
-      res.send({
-        messages: [
-          {
-            text: "Podcasts are my background fuel — I’m usually listening while building. If you tell me what you’re into, I’ll share what I’ve been looping lately.",
-            audio: await audioFileToBase64("audios/overwhelming.wav"),
-            lipsync: await readJsonTranscript("audios/overwhelming.json"),
-            facialExpression: "smile",
-            animation: "Idle",
-          },
-        ],
-      });
-      return;
-    }
-
     if (messageType === "projects") {
       console.log("Template msg: projects");
-      const projects = extractProjectsFromContext(portfolioSiteMd);
-      const names = projects.slice(0, 4).map((p) => p.title).filter(Boolean);
       res.send({
         messages: [
           {
-            text: names.length
-              ? `Here are a few projects you can explore: ${names.join(", ")}. Want the tech stack or what I built in any of them?`
-              : "I can show you my projects—add them under Projects in context/portfolio.md and I’ll surface them here.",
-            audio: await audioFileToBase64("audios/overwhelming.wav"),
-            lipsync: await readJsonTranscript("audios/overwhelming.json"),
+            text: "I have worked on a range of end-to-end projects including Natural Language Processing & Machine Learning Sentiment Analysis, a Retrieval-Augmented Generation rag pipeline, Voice-to-Voice LLM assistant enabling real-time speech interaction, and a YOLO-based object detection system that identifies items and estimates nutritional values in real time. I have also built full stack software solutions with engaging User Interfaces. To view them visit my portfolio to understand how I can add value through my skills.",
+            audio: await audioFileToBase64("audios/projects.wav"),
+            lipsync: await readJsonTranscript("audios/projects.json"),
             facialExpression: "smile",
             animation: "Thinking",
           },
@@ -557,16 +490,12 @@ app.post("/chat", async (req, res) => {
 
     if (messageType === "blogs") {
       console.log("Template msg: blogs");
-      const blogs = extractBlogsFromContext(portfolioSiteMd);
-      const names = blogs.slice(0, 4).map((b) => b.title).filter(Boolean);
       res.send({
         messages: [
           {
-            text: names.length
-              ? `Here are a few posts you can open: ${names.join(", ")}. Tap Details for the summary, or Read post for the full article.`
-              : "I can list my blog posts—add them under Blogs in context/portfolio.md and they’ll show up here.",
-            audio: await audioFileToBase64("audios/overwhelming.wav"),
-            lipsync: await readJsonTranscript("audios/overwhelming.json"),
+            text: "I write about practical AI and ML applications, covering topics such as RAG vs Fine-Tuning for Enterprise Assistants, Building ML Pipelines on Azure, Evaluating ML Models Beyond Accuracy, and Model Drift Detection and Retraining, sharing insights on deployment, robustness, and production-ready AI practices. To view them, visit my portfolio to read my views.",
+            audio: await audioFileToBase64("audios/blogs.wav"),
+            lipsync: await readJsonTranscript("audios/blogs.json"),
             facialExpression: "smile",
             animation: "Thinking",
           },
@@ -575,45 +504,47 @@ app.post("/chat", async (req, res) => {
       return;
     }
 
-    console.log("Adding user message to chat history:", userMessage);
-    addToUserChatHistory(userId, "user", userMessage);
+    // Hobby sub-panels (chess, gaming, …) no longer send audio; UI should not call /chat for them.
+    // If something still posts these, avoid LLM + empty history rows.
+    if (messageType && String(messageType).startsWith("hobbies_") && !userMessage) {
+      res.send({ messages: [] });
+      return;
+    }
+
+    const trimmedUserMessage = String(userMessage || "").trim();
+    // Typed chat only: no empty messages to Groq (templates already returned above).
+    if (!trimmedUserMessage) {
+      res.send({ messages: [] });
+      return;
+    }
+
+    console.log("Adding user message to chat history:", trimmedUserMessage);
+    addToUserChatHistory(userId, "user", trimmedUserMessage);
 
     console.log("Getting user chat history for user:", userId);
     const userChatHistory = getUserChatHistory(userId).chatHistory;
 
-    console.log("Formatting user chat history into text");
-    const chatHistoryText = userChatHistory.map((entry) => `${entry.role}: ${entry.message}`).join("\n");
+    const chatHistoryText = userChatHistory
+      .map((entry) => `${entry.role}: ${entry.message}`)
+      .join("\n");
 
     try {
-          const prompt = `
-          PORTFOLIO CONTEXT (SOURCE OF TRUTH — chat uses portfolio-llm.md only):
-          ${portfolioLlmContext || "[No LLM portfolio context loaded]"}
+          // portfolioLlmContext = portfolio-llm.md ONLY (never portfolio.md). Template buttons never reach here.
+          const prompt = `PORTFOLIO CONTEXT (from ${PORTFOLIO_LLM_PATH} only — not the full site markdown):
+${portfolioLlmContext || "[No portfolio-llm.md loaded — say you don't have that detail and offer contact@aligilani.com]"}
 
-          Chat History:
-        ${chatHistoryText}
-      
-        You are AliGen, a portfolio assistant for Ali Gilani.
-        You must answer ONLY using the PORTFOLIO CONTEXT above.
-        If the user asks something not in the context, say you don't have that info and offer contact@aligilani.com.
-        Keep responses short, clear, and helpful.
-        Rules:
-        1. Do NOT start new messages with any repetitive phrase or starting words present in Chat History.
-        2. Do NOT end any sentence with "isn't it" or similar repetitive present in Chat History.
-        3. Keep responses short and concise (maximum 2-3 sentences).
-        4. Avoid starting sentences with the same word or phrase.
-        5. Do not use special characters like asterisks (*) or backticks (\`).
-        6. Always reply with a JSON array of messages, with a maximum of 1 message.
-        7. Each message must have text, facialExpression, and animation properties.
-        8. The available facial expressions are: smile, sad, angry, surprised, and default.
-        9. The available animations are: Angry, Bicep, Idle, Laughing, Sad, Salute, Stretching, Surprised, Thinking.
-      
-        Chat History:
-        ${chatHistoryText}
-      
-        User message: ${userMessage || "Hello"}
-        `;
+Recent chat (newest last, capped server-side):
+${chatHistoryText || "(none)"}
+
+You are AliGen for Ali Gilani. Answer ONLY from PORTFOLIO CONTEXT. If missing, say so and offer contact@aligilani.com.
+Reply with ONE JSON object in an array (max 1 message) with keys: text, facialExpression, animation.
+facialExpression: smile | sad | angry | surprised | default
+animation: Angry | Bicep | Idle | Laughing | Sad | Salute | Stretching | Surprised | Thinking
+No asterisks or backticks in text. Max 2–3 short sentences. Vary openings; don't echo chat redundantly.
+
+User: ${trimmedUserMessage}`;
   
-      console.log("Sending prompt to Groq API:", prompt);
+      console.log("Groq prompt size (chars):", prompt.length);
       const completion = await groq.chat.completions.create({
         messages: [
           {
@@ -631,9 +562,9 @@ app.post("/chat", async (req, res) => {
         console.error("Invalid response from Groq API:", responseText);
         res.status(400).send({
           messages: [{
-            text: "Whoops, I tried to generate some witty banter, but my circuits are feeling a bit fried. Let's give it another go, yeah?",
-            audio: await audioFileToBase64("audios/error.wav"),
-            lipsync: await readJsonTranscript("audios/error.json"),
+            text: "wow there Slow down, you just hit the APIs limit, even APIs need a coffee break. Try again in some time",
+            audio: await audioFileToBase64("audios/api-limit-error.wav"),
+            lipsync: await readJsonTranscript("audios/api-limit-error.json"),
             facialExpression: "surprised",
             animation: "Idle",
           }],

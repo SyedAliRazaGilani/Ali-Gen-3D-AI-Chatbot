@@ -1,10 +1,10 @@
-/** Same handle as Chess.com profile in ChessProfileCard.jsx */
-const STEAM_USERNAME = "SlaYeReoN";
+/** Default profile; override with VITE_CSGO_PROFILE_URL if needed. */
+const STEAM_PROFILE_URL =
+  "https://steamcommunity.com/profiles/76561198863731398";
 
 export default function GamingProfileCard() {
   const envUrl = (import.meta.env.VITE_CSGO_PROFILE_URL || "").trim();
-  const profileUrl =
-    envUrl || `https://steamcommunity.com/id/${STEAM_USERNAME}`;
+  const profileUrl = envUrl || STEAM_PROFILE_URL;
   const cover =
     "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=600&fit=crop";
 
