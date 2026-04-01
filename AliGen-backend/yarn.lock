@@ -1342,6 +1342,43 @@ __metadata:
   languageName: node
   linkType: hard
 
+"aligen-frontend@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "aligen-frontend@workspace:."
+  dependencies:
+    "@avaturn/sdk": "npm:^1.1.4"
+    "@react-three/drei": "npm:^9.121.4"
+    "@react-three/fiber": "npm:^8.17.14"
+    "@react-three/xr": "npm:^5.7.1"
+    "@types/react": "npm:^18.0.27"
+    "@types/react-dom": "npm:^18.0.10"
+    "@types/three": "npm:0.152.1"
+    "@vitejs/plugin-react": "npm:^3.1.0"
+    autoprefixer: "npm:^10.4.16"
+    class-variance-authority: "npm:^0.7.1"
+    classnames: "npm:^2.5.1"
+    clsx: "npm:^2.1.1"
+    gsap: "npm:^3.12.7"
+    leva: "npm:^0.9.35"
+    lucide-react: "npm:^0.474.0"
+    motion: "npm:^12.0.11"
+    postcss: "npm:^8.4.31"
+    react: "npm:^18.2.0"
+    react-dom: "npm:^18.2.0"
+    react-spinners: "npm:^0.15.0"
+    react-toggle-dark-mode: "npm:^1.1.1"
+    serve: "npm:^14.2.4"
+    shadcn: "npm:^2.3.0"
+    simplex-noise: "npm:^4.0.3"
+    tailwind-merge: "npm:^3.0.1"
+    tailwindcss: "npm:^3.3.3"
+    tailwindcss-animate: "npm:^1.0.7"
+    three: "npm:^0.173.0"
+    vite: "npm:^4.5.9"
+    wawa-lipsync: "npm:^0.0.2"
+  languageName: unknown
+  linkType: soft
+
 "ansi-align@npm:^3.0.1":
   version: 3.0.1
   resolution: "ansi-align@npm:3.0.1"
@@ -1665,43 +1702,6 @@ __metadata:
   checksum: 10c0/b23e88132c702f4855ca6d25cb5538b1114343e41472d5263ee8a37cccfccd9c4216d111e1097c6a27830407a1dc81fecdf2a56f2c63033d4dbbd88c10b0dcef
   languageName: node
   linkType: hard
-
-"chatbot-zoe-frontend@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "chatbot-zoe-frontend@workspace:."
-  dependencies:
-    "@avaturn/sdk": "npm:^1.1.4"
-    "@react-three/drei": "npm:^9.121.4"
-    "@react-three/fiber": "npm:^8.17.14"
-    "@react-three/xr": "npm:^5.7.1"
-    "@types/react": "npm:^18.0.27"
-    "@types/react-dom": "npm:^18.0.10"
-    "@types/three": "npm:0.152.1"
-    "@vitejs/plugin-react": "npm:^3.1.0"
-    autoprefixer: "npm:^10.4.16"
-    class-variance-authority: "npm:^0.7.1"
-    classnames: "npm:^2.5.1"
-    clsx: "npm:^2.1.1"
-    gsap: "npm:^3.12.7"
-    leva: "npm:^0.9.35"
-    lucide-react: "npm:^0.474.0"
-    motion: "npm:^12.0.11"
-    postcss: "npm:^8.4.31"
-    react: "npm:^18.2.0"
-    react-dom: "npm:^18.2.0"
-    react-spinners: "npm:^0.15.0"
-    react-toggle-dark-mode: "npm:^1.1.1"
-    serve: "npm:^14.2.4"
-    shadcn: "npm:^2.3.0"
-    simplex-noise: "npm:^4.0.3"
-    tailwind-merge: "npm:^3.0.1"
-    tailwindcss: "npm:^3.3.3"
-    tailwindcss-animate: "npm:^1.0.7"
-    three: "npm:^0.173.0"
-    vite: "npm:^4.5.9"
-    wawa-lipsync: "npm:^0.0.2"
-  languageName: unknown
-  linkType: soft
 
 "chokidar@npm:^3.6.0":
   version: 3.6.0

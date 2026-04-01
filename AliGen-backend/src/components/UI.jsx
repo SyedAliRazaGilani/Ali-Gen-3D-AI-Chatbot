@@ -347,7 +347,7 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
           ) : projects.length === 0 ? (
             <div className="text-white/80 text-sm px-1">
               No projects found yet. Add them under the “## Projects” section in{" "}
-              <code className="text-white/90">AliGen-frontend/context/portfolio.md</code>.
+              <code className="text-white/90">AliGen-backend/context/portfolio.md</code>.
             </div>
           ) : (
             <div className="w-full max-w-[42rem] mx-auto flex flex-col items-center gap-3">
@@ -467,7 +467,7 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
           ) : workItems.length === 0 ? (
             <div className="text-white/80 text-sm px-1">
               No roles found yet. Add them under the “## Work Experience” section in{" "}
-              <code className="text-white/90">AliGen-frontend/context/portfolio.md</code>.
+              <code className="text-white/90">AliGen-backend/context/portfolio.md</code>.
             </div>
           ) : (
             <div className="w-full max-w-[44rem] mx-auto min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-0.5 pb-1">
@@ -614,7 +614,7 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
           ) : blogs.length === 0 ? (
             <div className="text-white/80 text-sm px-1">
               No blog posts found yet. Add them under the “## Blogs” section in{" "}
-              <code className="text-white/90">AliGen-frontend/context/portfolio.md</code>.
+              <code className="text-white/90">AliGen-backend/context/portfolio.md</code>.
             </div>
           ) : (
             <div className="w-full max-w-[42rem] mx-auto flex flex-col items-center gap-3">

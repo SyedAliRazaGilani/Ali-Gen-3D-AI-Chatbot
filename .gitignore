@@ -13,5 +13,5 @@
 **/.DS_Store
 
 # Generated chat audio/lipsync artifacts (keep only curated audio files)
-AliGen-frontend/audios/*_message_*
-AliGen-frontend/audios/message_*
+AliGen-backend/audios/*_message_*
+AliGen-backend/audios/message_*

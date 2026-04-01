@@ -1,6 +1,7 @@
 # Ali Gilani — site & API data (edit this file)
 
-**Used for** the Projects / Blogs / Work panels and HTTP APIs (`/projects`, `/blogs`, `/work`). **Not** sent to the chat LLM — for that, edit **`context/portfolio-llm.md`**.
+**Used for** the Projects / Blogs / Work panels and HTTP APIs (`/projects`, `/blogs`, `/work`). **Not** sent to the chat LLM — for that, edit **`context/portfolio-llm.md`**.  
+On disk this file lives under the **Express app** folder: `AliGen-backend/context/portfolio.md`.
 
 ## Quick facts
 - **Name**: Ali Gilani

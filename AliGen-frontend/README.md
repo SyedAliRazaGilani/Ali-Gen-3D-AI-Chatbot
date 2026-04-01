@@ -1,11 +1,18 @@
+# AliGen API (Express)
+
+Express BFF: `/chat`, `/projects`, `/blogs`, `/work`. Loads `context/portfolio.md`, `context/portfolio-llm.md`, and static audio under `audios/`.
+
 ## Setup
-Create a `.env` file at the root of the repository to add your **Google AI Studio Gemini Flash 1.5 API Key** and **Amazon Polly API Keys**. Refer to `.env.example` for the environment variable names.
 
-Download the **RhubarbLibrary** binary for your **OS** [here](https://github.com/DanielSWolf/rhubarb-lip-sync/releases) and put it in your `bin` folder. `rhubarb` executable should be accessible through `bin/rhubarb`.
+Create `.env` in this directory (repo folder name: **`AliGen-backend`**):
 
-Start the development server with
-```
-yarn
+- `PORT` — e.g. `3000`
+- `GROQ_API_KEY`
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` (Polly + optional FFmpeg/Rhubarb for typed replies)
+
+```bash
+yarn install
 yarn dev
 ```
 
+The Vite UI lives in **`../AliGen-frontend`** and should set `VITE_API_URL` to this server’s URL.

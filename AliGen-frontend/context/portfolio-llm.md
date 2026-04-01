@@ -1,6 +1,6 @@
 # Ali Gilani — context for AliGen (LLM / chat only)
 
-Keep this file **short**: it is injected into every chat prompt. Detailed copy, URLs, and images for the UI live in `context/portfolio.md`.
+Keep this file **short**: it is injected into every chat prompt. Detailed copy, URLs, and images for the UI live in `context/portfolio.md` (same **Express** app folder: `AliGen-backend/context/`).
 
 ## Quick facts
 - **Name**: Ali Gilani

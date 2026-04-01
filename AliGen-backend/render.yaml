@@ -1,5 +1,6 @@
+# Vite static site — source folder in repo: AliGen-frontend (after folder rename).
 services:
-  - name: chatbot-zoe-frontend
+  - name: AliGen-frontend
     type: web
     env: static
     buildCommand: "corepack enable && yarn install --immutable && yarn build"
