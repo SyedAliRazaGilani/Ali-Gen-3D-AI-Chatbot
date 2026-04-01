@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 
 export default function ChessProfileCard() {
-  const username = (import.meta.env.VITE_CHESS_USERNAME || "ali-raza-09").trim();
+  const username = "SlaYeReoN";
   const chessCover =
     "https://images.unsplash.com/photo-1528819622765-d6bcf132f793?w=900&h=1200&fit=crop";
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [isHover, setIsHover] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [profile, setProfile] = useState(null);
@@ -62,32 +60,11 @@ export default function ChessProfileCard() {
   const avatarFallback =
     "https://images.unsplash.com/photo-1511367461989-f85a21fda167?w=120&h=120&fit=crop";
 
-  const onMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
-    const y = (px - 0.5) * 14;
-    const x = (0.5 - py) * 14;
-    setTilt({ x, y });
-  };
-
   const profileUrl = username ? `https://www.chess.com/member/${username}` : "https://www.chess.com";
 
   return (
     <div
       className="rounded-3xl border border-white/20 bg-black/35 backdrop-blur-xl overflow-hidden text-white"
-      onMouseMove={onMove}
-      onMouseEnter={() => setIsHover(true)}
-      onMouseLeave={() => {
-        setIsHover(false);
-        setTilt({ x: 0, y: 0 });
-      }}
-      style={{
-        transform: isHover
-          ? `perspective(900px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`
-          : "perspective(900px) rotateX(0deg) rotateY(0deg)",
-        transition: "transform 150ms ease",
-      }}
     >
       <div className="relative h-36">
         <img

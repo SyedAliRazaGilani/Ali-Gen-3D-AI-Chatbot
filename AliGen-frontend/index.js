@@ -7,20 +7,34 @@ import Groq from "groq-sdk";
 import { PollyClient, SynthesizeSpeechCommand } from "@aws-sdk/client-polly"; // AWS SDK v3 imports
 dotenv.config();
 
-// Portfolio context (single source of truth)
-let portfolioContext = "";
-const PORTFOLIO_CONTEXT_PATH = "context/portfolio.md";
-fs.readFile(PORTFOLIO_CONTEXT_PATH, "utf8")
-  .then((txt) => {
-    portfolioContext = txt;
-    console.log(`Loaded portfolio context: ${PORTFOLIO_CONTEXT_PATH}`);
-  })
-  .catch((err) => {
-    console.warn(
-      `Could not read ${PORTFOLIO_CONTEXT_PATH}. Portfolio Q&A will be weaker until you add it.`,
-      err?.message || err
-    );
-  });
+// Site/API markdown (projects, blogs, work — full detail, URLs, images)
+let portfolioSiteMd = "";
+// Slim markdown injected into chat prompts only
+let portfolioLlmContext = "";
+
+const PORTFOLIO_SITE_PATH = "context/portfolio.md";
+const PORTFOLIO_LLM_PATH = "context/portfolio-llm.md";
+
+try {
+  portfolioSiteMd = await fs.readFile(PORTFOLIO_SITE_PATH, "utf8");
+  console.log(`Loaded portfolio site data: ${PORTFOLIO_SITE_PATH}`);
+} catch (err) {
+  console.warn(
+    `Could not read ${PORTFOLIO_SITE_PATH}. /projects, /blogs, /work will be empty until it exists.`,
+    err?.message || err
+  );
+}
+
+try {
+  portfolioLlmContext = await fs.readFile(PORTFOLIO_LLM_PATH, "utf8");
+  console.log(`Loaded portfolio LLM context: ${PORTFOLIO_LLM_PATH}`);
+} catch (err) {
+  console.warn(
+    `Could not read ${PORTFOLIO_LLM_PATH}. Using site portfolio for LLM prompts (larger context). Add ${PORTFOLIO_LLM_PATH} to slim chat context.`,
+    err?.message || err
+  );
+  portfolioLlmContext = portfolioSiteMd;
+}
 
 function extractProjectsFromContext(md) {
   if (!md) return [];
@@ -28,6 +42,7 @@ function extractProjectsFromContext(md) {
   const isProjectsHeader = (l) => /^##\s+Projects\b/i.test(l.trim());
   let inProjects = false;
   const projects = [];
+  let current = null;
 
   for (const raw of lines) {
     const line = raw.trim();
@@ -39,21 +54,161 @@ function extractProjectsFromContext(md) {
     // Stop when next section starts
     if (/^##\s+/.test(line) && !isProjectsHeader(line)) break;
 
-    // Parse list items: "- Name — description"
-    const m = line.match(/^-\s+(.+?)\s+—\s+(.+)\s*$/);
-    if (m) {
-      projects.push({ title: m[1].trim(), summary: m[2].trim() });
+    // New bullet item: "- Title — summary" OR "- Title : summary" OR "- Title"
+    const bullet = line.match(/^-\s+(.+?)\s*$/);
+    if (bullet) {
+      const rest = bullet[1].trim();
+      let title = rest;
+      let summary = "";
+
+      // Prefer em-dash separator first, then colon.
+      const dashSplit = rest.split(/\s+—\s+/);
+      if (dashSplit.length >= 2) {
+        title = dashSplit[0].trim();
+        summary = dashSplit.slice(1).join(" — ").trim();
+      } else {
+        const colonSplit = rest.split(/\s*:\s*/);
+        if (colonSplit.length >= 2) {
+          title = colonSplit[0].trim();
+          summary = colonSplit.slice(1).join(": ").trim();
+        }
+      }
+
+      current = { title, summary };
+      projects.push(current);
       continue;
     }
 
-    // Fallback: "- Name"
-    const m2 = line.match(/^-\s+(.+)\s*$/);
-    if (m2) {
-      projects.push({ title: m2[1].trim(), summary: "" });
+    // Continuation lines: attach to last project's summary (supports multi-line descriptions)
+    if (current && line) {
+      current.summary = current.summary ? `${current.summary} ${line}` : line;
     }
   }
 
   return projects;
+}
+
+function extractWorkExperienceFromContext(md) {
+  if (!md) return [];
+  const lines = md.split(/\r?\n/);
+  const isWorkHeader = (l) => /^##\s+Work Experience\b/i.test(l.trim());
+  let inWork = false;
+  const items = [];
+  let current = null;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!inWork) {
+      if (isWorkHeader(line)) inWork = true;
+      continue;
+    }
+
+    if (/^##\s+/.test(line) && !isWorkHeader(line)) break;
+
+    const bullet = line.match(/^-\s+(.+?)\s*$/);
+    if (bullet) {
+      const rest = bullet[1].trim();
+      let title = rest;
+      let summary = "";
+
+      const dashSplit = rest.split(/\s+—\s+/);
+      if (dashSplit.length >= 2) {
+        title = dashSplit[0].trim();
+        summary = dashSplit.slice(1).join(" — ").trim();
+      } else {
+        const colonSplit = rest.split(/\s*:\s*/);
+        if (colonSplit.length >= 2) {
+          title = colonSplit[0].trim();
+          summary = colonSplit.slice(1).join(": ").trim();
+        }
+      }
+
+      current = { title, summary };
+      items.push(current);
+      continue;
+    }
+
+    if (current && line) {
+      current.summary = current.summary ? `${current.summary} ${line}` : line;
+    }
+  }
+
+  return items;
+}
+
+/** Strip trailing `(link: …)` / `(image: …)` from blog summary (any order). */
+function parseBlogMeta(text) {
+  let s = (text || "").trim();
+  let url = "";
+  let imageUrl = "";
+  const linkRe = /\s*\(link:\s*(https?:\/\/[^)]+)\)\s*$/i;
+  const imgRe = /\s*\(image:\s*(https?:\/\/[^)]+)\)\s*$/i;
+  let m;
+  for (;;) {
+    if ((m = s.match(imgRe))) {
+      imageUrl = m[1].trim();
+      s = s.slice(0, m.index).trim();
+      continue;
+    }
+    if ((m = s.match(linkRe))) {
+      url = m[1].trim();
+      s = s.slice(0, m.index).trim();
+      continue;
+    }
+    break;
+  }
+  return { summary: s, url, imageUrl };
+}
+
+function extractBlogsFromContext(md) {
+  if (!md) return [];
+  const lines = md.split(/\r?\n/);
+  const isBlogsHeader = (l) => /^##\s+Blogs\b/i.test(l.trim());
+  let inBlogs = false;
+  const rawItems = [];
+  let current = null;
+
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!inBlogs) {
+      if (isBlogsHeader(line)) inBlogs = true;
+      continue;
+    }
+
+    if (/^##\s+/.test(line) && !isBlogsHeader(line)) break;
+
+    const bullet = line.match(/^-\s+(.+?)\s*$/);
+    if (bullet) {
+      const rest = bullet[1].trim();
+      let title = rest;
+      let summary = "";
+
+      const dashSplit = rest.split(/\s+—\s+/);
+      if (dashSplit.length >= 2) {
+        title = dashSplit[0].trim();
+        summary = dashSplit.slice(1).join(" — ").trim();
+      } else {
+        const colonSplit = rest.split(/\s*:\s*/);
+        if (colonSplit.length >= 2) {
+          title = colonSplit[0].trim();
+          summary = colonSplit.slice(1).join(": ").trim();
+        }
+      }
+
+      current = { title, summary };
+      rawItems.push(current);
+      continue;
+    }
+
+    if (current && line) {
+      current.summary = current.summary ? `${current.summary} ${line}` : line;
+    }
+  }
+
+  return rawItems.map((b) => {
+    const { summary, url, imageUrl } = parseBlogMeta(b.summary || "");
+    return { title: b.title, summary, url, imageUrl };
+  });
 }
 
 // Initialize Groq
@@ -135,9 +290,16 @@ app.get("/", (req, res) => {
 });
 
 app.get("/projects", (req, res) => {
-  res.json({ projects: extractProjectsFromContext(portfolioContext) });
+  res.json({ projects: extractProjectsFromContext(portfolioSiteMd) });
 });
 
+app.get("/blogs", (req, res) => {
+  res.json({ blogs: extractBlogsFromContext(portfolioSiteMd) });
+});
+
+app.get("/work", (req, res) => {
+  res.json({ work: extractWorkExperienceFromContext(portfolioSiteMd) });
+});
 
 const execCommand = (command) => {
   return new Promise((resolve, reject) => {
@@ -375,14 +537,34 @@ app.post("/chat", async (req, res) => {
 
     if (messageType === "projects") {
       console.log("Template msg: projects");
-      const projects = extractProjectsFromContext(portfolioContext);
+      const projects = extractProjectsFromContext(portfolioSiteMd);
       const names = projects.slice(0, 4).map((p) => p.title).filter(Boolean);
       res.send({
         messages: [
           {
             text: names.length
               ? `Here are a few projects you can explore: ${names.join(", ")}. Want the tech stack or what I built in any of them?`
-              : "I can show you my projects—add them to the Projects section in my portfolio context file and I’ll surface them here.",
+              : "I can show you my projects—add them under Projects in context/portfolio.md and I’ll surface them here.",
+            audio: await audioFileToBase64("audios/overwhelming.wav"),
+            lipsync: await readJsonTranscript("audios/overwhelming.json"),
+            facialExpression: "smile",
+            animation: "Thinking",
+          },
+        ],
+      });
+      return;
+    }
+
+    if (messageType === "blogs") {
+      console.log("Template msg: blogs");
+      const blogs = extractBlogsFromContext(portfolioSiteMd);
+      const names = blogs.slice(0, 4).map((b) => b.title).filter(Boolean);
+      res.send({
+        messages: [
+          {
+            text: names.length
+              ? `Here are a few posts you can open: ${names.join(", ")}. Tap Details for the summary, or Read post for the full article.`
+              : "I can list my blog posts—add them under Blogs in context/portfolio.md and they’ll show up here.",
             audio: await audioFileToBase64("audios/overwhelming.wav"),
             lipsync: await readJsonTranscript("audios/overwhelming.json"),
             facialExpression: "smile",
@@ -404,8 +586,8 @@ app.post("/chat", async (req, res) => {
 
     try {
           const prompt = `
-          PORTFOLIO CONTEXT (SOURCE OF TRUTH):
-          ${portfolioContext || "[No portfolio context loaded]"}
+          PORTFOLIO CONTEXT (SOURCE OF TRUTH — chat uses portfolio-llm.md only):
+          ${portfolioLlmContext || "[No LLM portfolio context loaded]"}
 
           Chat History:
         ${chatHistoryText}

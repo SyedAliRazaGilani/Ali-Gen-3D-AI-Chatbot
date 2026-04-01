@@ -3,9 +3,10 @@ import { cn } from "../../public/lib/utils";  // Adjust based on the folder stru
 import { useEffect, useRef, useState } from "react";
 
 export const BackgroundGradientAnimation = ({
-  gradientBackgroundStart = " linear-gradient(0deg, #aaa7a7 40%, #463889 90%)",  // light purple
-  gradientBackgroundEnd = " linear-gradient(0deg, #aaa7a7 40%, #463889 90%)",    // white
-  
+  isDarkMode = false,
+  gradientBackgroundStart = " linear-gradient(0deg, #aaa7a7 40%, #463889 90%)", // light purple
+  gradientBackgroundEnd = " linear-gradient(0deg, #aaa7a7 40%, #463889 90%)",
+
   firstColor = "18, 113, 255",
   secondColor = "221, 74, 255",
   thirdColor = "100, 220, 255",
@@ -17,8 +18,21 @@ export const BackgroundGradientAnimation = ({
   children,
   className,
   interactive = true,
-  containerClassName
+  containerClassName,
 }) => {
+  const bgStart = isDarkMode
+    ? " linear-gradient(0deg, #06060c 42%, #14102a 88%)"
+    : gradientBackgroundStart;
+  const bgEnd = isDarkMode
+    ? " linear-gradient(0deg, #0a0818 38%, #1f1542 92%)"
+    : gradientBackgroundEnd;
+  const c1 = isDarkMode ? "32, 58, 128" : firstColor;
+  const c2 = isDarkMode ? "100, 48, 168" : secondColor;
+  const c3 = isDarkMode ? "28, 92, 138" : thirdColor;
+  const c4 = isDarkMode ? "120, 42, 88" : fourthColor;
+  const c5 = isDarkMode ? "72, 62, 112" : fifthColor;
+  const ptr = isDarkMode ? "88, 62, 178" : pointerColor;
+
   const interactiveRef = useRef(null);
 
   const [curX, setCurX] = useState(0);
@@ -27,17 +41,17 @@ export const BackgroundGradientAnimation = ({
   const [tgY, setTgY] = useState(0);
 
   useEffect(() => {
-    document.body.style.setProperty("--gradient-background-start", gradientBackgroundStart);
-    document.body.style.setProperty("--gradient-background-end", gradientBackgroundEnd);
-    document.body.style.setProperty("--first-color", firstColor);
-    document.body.style.setProperty("--second-color", secondColor);
-    document.body.style.setProperty("--third-color", thirdColor);
-    document.body.style.setProperty("--fourth-color", fourthColor);
-    document.body.style.setProperty("--fifth-color", fifthColor);
-    document.body.style.setProperty("--pointer-color", pointerColor);
+    document.body.style.setProperty("--gradient-background-start", bgStart);
+    document.body.style.setProperty("--gradient-background-end", bgEnd);
+    document.body.style.setProperty("--first-color", c1);
+    document.body.style.setProperty("--second-color", c2);
+    document.body.style.setProperty("--third-color", c3);
+    document.body.style.setProperty("--fourth-color", c4);
+    document.body.style.setProperty("--fifth-color", c5);
+    document.body.style.setProperty("--pointer-color", ptr);
     document.body.style.setProperty("--size", size);
     document.body.style.setProperty("--blending-value", blendingValue);
-  }, [gradientBackgroundStart, gradientBackgroundEnd, firstColor, secondColor, thirdColor, fourthColor, fifthColor, pointerColor, size, blendingValue]);
+  }, [bgStart, bgEnd, c1, c2, c3, c4, c5, ptr, size, blendingValue]);
 
   useEffect(() => {
     function move() {

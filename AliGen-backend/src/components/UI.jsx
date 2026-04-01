@@ -4,14 +4,68 @@ import ChessProfileCard from "./ChessProfileCard";
 import SpotifyCard from "./SpotifyCard";
 import GamingProfileCard from "./GamingProfileCard";
 import SoftwareSolutionsCard from "./SoftwareSolutionsCard";
+import ProjectDetailCard from "./ProjectDetailCard";
+import BlogDetailCard from "./BlogDetailCard";
+import WorkDetailCard from "./WorkDetailCard";
+import AliGenNavbar from "./AliGenNavbar";
+import { workRoleWithoutDates } from "../utils/workText";
+import mainLogo from "../assets/main-logo.png";
+import projNlp from "../assets/proj-nlp.png";
+import projRagNasa from "../assets/proj-rag-nasa.png";
+import projVoiceLlm from "../assets/proj-voice-llm.png";
+import projComputerVision from "../assets/proj-computer-vision.png";
 
-export const UI = ({ hidden,  ...props }) => {
+function WorkListItem({ w, onDetails, className = "" }) {
+  const company = w?.title?.trim() || "Untitled";
+  const roleLine = w?.summary?.trim() || "";
+  const roleNoDates = workRoleWithoutDates(roleLine);
+
+  return (
+    <div
+      className={`rounded-xl border border-white/20 bg-black/40 backdrop-blur-xl p-2.5 sm:p-3 lg:rounded-2xl lg:p-2.5 text-white flex flex-col gap-1.5 max-lg:gap-2 lg:gap-1.5 h-full min-h-[6rem] lg:min-h-[6.25rem] ${className}`}
+    >
+      <div className="flex items-start justify-between gap-1.5 w-full min-w-0 lg:gap-2">
+        <div className="min-w-0 flex-1 text-left">
+          <div className="flex lg:hidden flex-col gap-1">
+            <span className="font-bold text-xs leading-snug sm:text-sm line-clamp-2">
+              {company}
+            </span>
+            {roleNoDates ? (
+              <span className="text-white/75 text-[11px] leading-snug sm:text-xs line-clamp-2">
+                {roleNoDates}
+              </span>
+            ) : null}
+          </div>
+          <div className="hidden lg:block font-bold text-sm line-clamp-2">{company}</div>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (!w?.title) return;
+            onDetails();
+          }}
+          className="shrink-0 rounded-full bg-white/15 hover:bg-white/25 px-2 py-0.5 sm:px-2.5 sm:py-1 lg:px-2.5 text-white font-medium border border-white/20 transition-colors text-[11px] sm:text-xs lg:text-xs self-start"
+        >
+          Details
+        </button>
+      </div>
+      {roleNoDates ? (
+        <div className="hidden lg:block text-white/75 text-[11px] leading-snug line-clamp-2 w-full text-left">
+          {roleNoDates}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...props }) => {
   const input = useRef();
   const { chat, loading, setLoading, message, error, userId } = useChat();
   const [isErrorVisible, setIsErrorVisible] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const [showProjects, setShowProjects] = useState(false);
+  const [showBlogs, setShowBlogs] = useState(false);
+  const [showWork, setShowWork] = useState(false);
   const [showHobbies, setShowHobbies] = useState(false);
   const [showChessCard, setShowChessCard] = useState(false);
   const [showPodcastCard, setShowPodcastCard] = useState(false);
@@ -20,19 +74,30 @@ export const UI = ({ hidden,  ...props }) => {
   const [projects, setProjects] = useState([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [projectsError, setProjectsError] = useState(null);
+  const [blogs, setBlogs] = useState([]);
+  const [blogsLoading, setBlogsLoading] = useState(false);
+  const [blogsError, setBlogsError] = useState(null);
+  /** { title, summary, githubUrl, imageUrl } — set when opening a project detail; no LLM / chat. */
+  const [projectDetail, setProjectDetail] = useState(null);
+  /** { title, summary, postUrl } — blog detail panel; no LLM / chat. */
+  const [blogDetail, setBlogDetail] = useState(null);
+  const [workItems, setWorkItems] = useState([]);
+  const [workLoading, setWorkLoading] = useState(false);
+  const [workError, setWorkError] = useState(null);
+  /** { title, summary } — work detail panel; no LLM / chat. */
+  const [workDetail, setWorkDetail] = useState(null);
 
   const backendUrl = import.meta.env.VITE_API_URL;
   const workUrl = "https://aligilani.com/Work";
+  const blogListUrl = "https://aligilani.com/Blog";
   const projectGithubLinks = [
     "https://github.com/SyedAliRazaGilani/NLP-and-ML-Sentiment-Analysis-Prediction",
     "https://github.com/SyedAliRazaGilani/RAG-Pipeline",
     "https://github.com/SyedAliRazaGilani/Voice-to-Voice-LLM",
     "https://github.com/SyedAliRazaGilani/Train-and-Deploy-YOLO-Models",
   ];
-
-  const toggleVisibility = () => {
-    setIsVisible(!isVisible);
-  };
+  /** Same order as API / portfolio: NLP, RAG, Voice-to-Voice, YOLO */
+  const projectCoverImages = [projNlp, projRagNasa, projVoiceLlm, projComputerVision];
 
   useEffect(() => {
     if (error[userId]) {  // Error visibility per user
@@ -62,14 +127,28 @@ export const UI = ({ hidden,  ...props }) => {
     { text: "Work", type: "work" },
     { text: "Hobbies", type: "hobbies" },
     { text: "Projects", type: "projects" },
+    { text: "Blogs", type: "blogs" },
   ];
 
   const handleTemplateClick = (messageType) => {
     if (!loading[userId] && !message) {
       setLoading((prevState) => ({ ...prevState, [userId]: true }));
+      if (messageType === "about") {
+        setShowProjects(false);
+        setShowBlogs(false);
+        setShowWork(false);
+        setShowHobbies(false);
+        setProjectDetail(null);
+        setBlogDetail(null);
+        setWorkDetail(null);
+      }
       if (messageType === "projects") {
         setShowProjects(true);
+        setShowBlogs(false);
         setShowHobbies(false);
+        setShowWork(false);
+        setWorkDetail(null);
+        setBlogDetail(null);
         setProjectsError(null);
         setProjectsLoading(true);
         fetch(`${backendUrl}/projects`)
@@ -78,9 +157,45 @@ export const UI = ({ hidden,  ...props }) => {
           .catch((e) => setProjectsError(e?.message || "Failed to load projects"))
           .finally(() => setProjectsLoading(false));
       }
+      if (messageType === "blogs") {
+        setShowBlogs(true);
+        setShowProjects(false);
+        setShowHobbies(false);
+        setShowWork(false);
+        setProjectDetail(null);
+        setWorkDetail(null);
+        setBlogDetail(null);
+        setBlogsError(null);
+        setBlogsLoading(true);
+        fetch(`${backendUrl}/blogs`)
+          .then((r) => r.json())
+          .then((data) => setBlogs(Array.isArray(data?.blogs) ? data.blogs : []))
+          .catch((e) => setBlogsError(e?.message || "Failed to load blogs"))
+          .finally(() => setBlogsLoading(false));
+      }
+      if (messageType === "work") {
+        setShowWork(true);
+        setShowProjects(false);
+        setShowBlogs(false);
+        setShowHobbies(false);
+        setProjectDetail(null);
+        setBlogDetail(null);
+        setWorkDetail(null);
+        setWorkError(null);
+        setWorkLoading(true);
+        fetch(`${backendUrl}/work`)
+          .then((r) => r.json())
+          .then((data) => setWorkItems(Array.isArray(data?.work) ? data.work : []))
+          .catch((e) => setWorkError(e?.message || "Failed to load work experience"))
+          .finally(() => setWorkLoading(false));
+      }
       if (messageType === "hobbies") {
         setShowHobbies(true);
         setShowProjects(false);
+        setShowBlogs(false);
+        setShowWork(false);
+        setWorkDetail(null);
+        setBlogDetail(null);
       }
       chat("", messageType);  // Send template message type (also speaks a general response)
       setIsChatVisible(true);
@@ -92,10 +207,13 @@ export const UI = ({ hidden,  ...props }) => {
 
   return (
   <>
-    <header className={`backdrop-blur-3xl z-20 transition-all duration-300`}
-  >
+    <header className="backdrop-blur-3xl z-20 transition-all duration-300 font-sans">
     {/* Announcement Bar */}
-    <div className="flex justify-center items-center py-3 bg-black text-white text-sm gap-3">
+    <div
+      className={`flex justify-center items-center py-3 text-white text-sm gap-3 font-sans font-medium transition-colors duration-300 ${
+        isDarkMode ? "bg-neutral-950" : "bg-black"
+      }`}
+    >
      <p>&copy; 2025 AliGen. All Rights Reserved.</p>
       <div className="inline-flex gap-1 items-center">
         <p className="text-white/60 hidden md:block">Gemini Flash 1.5 x Amazon Polly</p>
@@ -104,50 +222,27 @@ export const UI = ({ hidden,  ...props }) => {
     </div>
     </header>
 
-    <div className="fixed z-50 inset-0 flex justify-between ">
-    {/* Responsive Logo */}
-     <div className=" absolute top-4 py-10 lg:py-1 md:top-5 lg:mt-6 xl:mt-9 ml-6 lg:ml-16 flex items-center">
+    <div className="fixed z-50 inset-0 flex justify-between pointer-events-none">
+    {/* Logo: desktop only — mobile uses center menu pill */}
+     <div className="hidden lg:flex absolute top-4 py-10 md:top-5 lg:top-[3.35rem] xl:top-[3.5rem] lg:py-0 lg:mt-0 xl:mt-0 ml-6 lg:ml-16 items-center font-sans pointer-events-auto">
       <img
-        src="/logosaas.png"
-        alt="SaaS Logo"
-        className="w-12 h-12  xl:w-20 xl:h-20 shadow-md transition-all duration-300 
-                   hover:scale-110 hover:shadow-lg rounded-full"
+        src={mainLogo}
+        alt="AliGen"
+        className="shrink-0 object-contain transition-opacity duration-300 hover:opacity-90
+          w-12 h-12 md:w-14 md:h-14 rounded-full shadow-md hover:shadow-lg
+          lg:h-12 lg:w-12 lg:rounded-none lg:shadow-none lg:hover:shadow-none"
       />
-      <span className="md:ml-5  mt-1 ml-3 font-sans font-extrabold text-white text-2xl md:text-3xl ">
+      <span className="mt-1 ml-3 font-medium text-white text-2xl md:text-3xl md:ml-5">
         AliGen
       </span>
      </div>
-  
 
-      {/* Question mark button */}
-      <div
-      className="absolute mt-2 z-50 top-10 right-10 md:right-20 md:top-14  lg:top-10 lg:right-24 xl:top-14 xl:right-28 cursor-pointer rounded-full"
-      style={{ backgroundColor: "#1a1a1a", pointerEvents: "auto" }}
-      >
-
-      {/* Button */}
-      <button
-        className="relative hidden md:block overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-        onClick={toggleVisibility}
-      >
-        <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-        <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 text-white backdrop-blur-3xl text-xl font-bold md:px-4 md:py-2 xl:px-6 xl:py-4 md:text-2xl lg:text-2xl xl:text-xl">
-          ?
-        </span>
-      </button>
-
-      {/* Pop-up Box (Visible on Click) */}
-      {isVisible && (
-        <div
-          className="absolute top-16 text-sm md:text-lg lg:text-lg right-2 w-64 p-4 bg-gray-600 text-white rounded-md shadow-lg"
-          style={{
-            transition: "opacity 0.3s ease-in-out",
-            backgroundColor: "#1a1a1a",
-          }}
-        >
-          <p>You can talk to AliGen about anything, she gives the best advice!</p>
-        </div>
-      )}
+      <AliGenNavbar
+        navLogo={mainLogo}
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        onToggleBackground={onToggleBackground}
+      />
     </div>
 
     <div className="container ">
@@ -160,7 +255,7 @@ export const UI = ({ hidden,  ...props }) => {
 
 
       {/* Template Message Buttons */}
-  {!showProjects && !showHobbies ? (
+  {!showProjects && !showBlogs && !showHobbies && !showWork ? (
     <div
       style={{
         position: "absolute",
@@ -196,121 +291,396 @@ export const UI = ({ hidden,  ...props }) => {
         bottom: "6.5rem",
         left: "50%",
         transform: "translateX(-50%)",
-        width: "min(1000px, 92vw)",
+        width: "min(800px, 92vw)",
         pointerEvents: "auto",
       }}
     >
-      <div className="flex items-center justify-between mb-3 px-1">
-        <div className="text-white font-bold text-xl">Projects</div>
-        <div className="flex items-center gap-2">
-          <a
-            href={workUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full bg-white/15 hover:bg-white/25 px-4 py-2 text-white font-medium border border-white/20 transition-colors"
-          >
-            View more
-          </a>
-          <button
-            onClick={() => setShowProjects(false)}
-            className="rounded-full bg-gray-200 px-4 py-2 text-black font-medium"
-          >
-            Back
-          </button>
-        </div>
-      </div>
-
-      {projectsLoading ? (
-        <div className="text-white/80 px-1">Loading projects…</div>
-      ) : projectsError ? (
-        <div className="text-red-200 px-1">{projectsError}</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {projects.map((p, idx) => (
-            <div
-              key={`${p?.title || "project"}-${idx}`}
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                if (!p?.title) return;
-                if (!loading[userId] && !message) {
-                  setLoading((prevState) => ({ ...prevState, [userId]: true }));
-                  chat(
-                    `Tell me more about the project "${p.title}". What is it, what did Ali build, what tech stack was used, and what impact/metrics does it have?`
-                  );
-                  setIsChatVisible(true);
-                  localStorage.setItem("audioUnlocked", "true");
-                  window.dispatchEvent(new Event("storage"));
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.currentTarget.click();
-                }
-              }}
-              className="rounded-2xl border border-white/20 bg-black/40 backdrop-blur-xl p-4 text-white cursor-pointer hover:bg-black/55 transition-colors"
+      {projectDetail ? (
+        <>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="text-white font-bold text-lg md:text-xl">Project</div>
+            <button
+              type="button"
+              onClick={() => setProjectDetail(null)}
+              className="rounded-full bg-black px-4 py-2 text-white font-medium border border-white/15 hover:bg-black/80 transition-colors"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="font-bold text-base leading-tight">{p?.title || "Untitled"}</div>
-                {projectGithubLinks[idx] ? (
-                  <a
-                    href={projectGithubLinks[idx]}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="relative shrink-0 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
-                    title="Open GitHub repo"
+              ← Back
+            </button>
+          </div>
+          <ProjectDetailCard
+            title={projectDetail.title}
+            summary={projectDetail.summary}
+            githubUrl={projectDetail.githubUrl}
+            imageUrl={projectDetail.imageUrl}
+          />
+        </>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="text-white font-bold text-lg md:text-xl">Projects</div>
+            <div className="flex items-center gap-2">
+              <a
+                href={workUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-white/15 hover:bg-white/25 px-4 py-2 text-white font-medium border border-white/20 transition-colors"
+              >
+                View more
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProjects(false);
+                  setProjectDetail(null);
+                }}
+                className="rounded-full bg-black px-4 py-2 text-white font-medium border border-white/15 hover:bg-black/80 transition-colors"
+              >
+                ← Back
+              </button>
+            </div>
+          </div>
+
+          {projectsLoading ? (
+            <div className="text-white/80 px-1">Loading projects…</div>
+          ) : projectsError ? (
+            <div className="text-red-200 px-1">{projectsError}</div>
+          ) : projects.length === 0 ? (
+            <div className="text-white/80 text-sm px-1">
+              No projects found yet. Add them under the “## Projects” section in{" "}
+              <code className="text-white/90">AliGen-frontend/context/portfolio.md</code>.
+            </div>
+          ) : (
+            <div className="w-full max-w-[42rem] mx-auto flex flex-col items-center gap-3">
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {projects.slice(0, 4).map((p, idx) => (
+                  <div
+                    key={`${p?.title || "project"}-${idx}`}
+                    className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-xl p-2.5 sm:p-3 lg:rounded-2xl lg:p-2.5 text-white flex flex-col items-center text-center gap-2 sm:gap-2 min-h-[6rem] sm:min-h-[6.25rem] lg:min-h-[6.25rem]"
                   >
-                    <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#6D28D9_45%,#393BB2_55%,#E2CBFF_100%)]" />
-                    <span className="relative z-10 inline-flex items-center justify-center rounded-full bg-white px-3 py-1 text-sm text-black">
-                    GitHub
-                    </span>
-                  </a>
-                ) : null}
+                    <div className="font-bold text-xs leading-snug sm:text-sm lg:text-sm line-clamp-2 w-full shrink-0">
+                      {p?.title || "Untitled"}
+                    </div>
+                    <div className="flex w-full justify-center sm:flex-1 sm:items-center sm:min-h-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!p?.title) return;
+                          setProjectDetail({
+                            title: p.title,
+                            summary: p.summary || "",
+                            githubUrl: projectGithubLinks[idx] || "",
+                            imageUrl: projectCoverImages[idx] || "",
+                          });
+                        }}
+                        className="rounded-full bg-white/15 hover:bg-white/25 px-2 py-0.5 sm:px-2.5 sm:py-1 lg:px-2.5 text-white font-medium border border-white/20 transition-colors text-[11px] sm:text-xs lg:text-xs"
+                      >
+                        Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-              {p?.summary ? (
-                <div
-                  className="text-white/80 mt-1 text-sm"
-                  style={{
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}
-                >
-                  {p.summary}
+              {projects.length > 4 ? (
+                <div className="flex flex-col items-center gap-3 w-full mt-1">
+                  {projects.slice(4).map((p, idx) => (
+                    <div
+                      key={`${p?.title || "project"}-rest-${idx}`}
+                      className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-xl p-2.5 sm:p-3 lg:rounded-2xl lg:p-2.5 text-white w-full max-w-[21rem] flex flex-col items-center text-center gap-2 sm:gap-2 min-h-[6rem] sm:min-h-[6.25rem] lg:min-h-[6.25rem]"
+                    >
+                      <div className="font-bold text-xs leading-snug sm:text-sm lg:text-sm line-clamp-2 w-full shrink-0">
+                        {p?.title || "Untitled"}
+                      </div>
+                      <div className="flex w-full justify-center sm:flex-1 sm:items-center sm:min-h-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!p?.title) return;
+                            setProjectDetail({
+                              title: p.title,
+                              summary: p.summary || "",
+                              githubUrl: projectGithubLinks[idx + 4] || "",
+                              imageUrl: projectCoverImages[idx + 4] || "",
+                            });
+                          }}
+                          className="rounded-full bg-white/15 hover:bg-white/25 px-2 py-0.5 sm:px-2.5 sm:py-1 lg:px-2.5 text-white font-medium border border-white/20 transition-colors text-[11px] sm:text-xs lg:text-xs"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : null}
-              <div className="mt-4 flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!p?.title) return;
-                    if (!loading[userId] && !message) {
-                      setLoading((prevState) => ({ ...prevState, [userId]: true }));
-                      chat(
-                        `Tell me more about the project "${p.title}". What is it, what did Ali build, what tech stack was used, and what impact/metrics does it have?`
-                      );
-                      setIsChatVisible(true);
-                      localStorage.setItem("audioUnlocked", "true");
-                      window.dispatchEvent(new Event("storage"));
-                    }
-                  }}
-                  className="rounded-full bg-white/15 hover:bg-white/25 px-4 py-2 text-white font-medium border border-white/20 transition-colors text-sm"
-                >
-                  Ask more
-                </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  ) : showWork ? (
+    <div
+      style={{
+        position: "absolute",
+        bottom: "6.5rem",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "min(680px, 92vw)",
+        pointerEvents: "auto",
+      }}
+      className="max-h-[calc(100vh-7rem)] flex flex-col min-h-0 overflow-hidden"
+    >
+      {workDetail ? (
+        <>
+          <div className="flex items-center justify-between mb-3 px-1 shrink-0">
+            <div className="text-white font-bold text-lg md:text-xl">Experience</div>
+            <button
+              type="button"
+              onClick={() => setWorkDetail(null)}
+              className="rounded-full bg-black px-4 py-2 text-white font-medium border border-white/15 hover:bg-black/80 transition-colors"
+            >
+              ← Back
+            </button>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-0.5 pb-1">
+            <WorkDetailCard title={workDetail.title} summary={workDetail.summary} />
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mb-3 px-1 shrink-0 gap-2">
+            <div className="text-white font-bold text-lg md:text-xl">Work</div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowWork(false);
+                setWorkDetail(null);
+              }}
+              className="rounded-full bg-black px-4 py-2 text-white font-medium border border-white/15 hover:bg-black/80 transition-colors shrink-0"
+            >
+              ← Back
+            </button>
+          </div>
+
+          {workLoading ? (
+            <div className="text-white/80 px-1">Loading experience…</div>
+          ) : workError ? (
+            <div className="text-red-200 px-1">{workError}</div>
+          ) : workItems.length === 0 ? (
+            <div className="text-white/80 text-sm px-1">
+              No roles found yet. Add them under the “## Work Experience” section in{" "}
+              <code className="text-white/90">AliGen-frontend/context/portfolio.md</code>.
+            </div>
+          ) : (
+            <div className="w-full max-w-[44rem] mx-auto min-h-0 flex-1 overflow-y-auto overflow-x-hidden pr-0.5 pb-1">
+              {/* Below lg: 2 columns; last row centers a single card when count is odd */}
+              <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full lg:hidden">
+                {workItems.map((w, idx) => {
+                  const isLastOdd =
+                    workItems.length % 2 === 1 && idx === workItems.length - 1;
+                  if (isLastOdd) {
+                    return (
+                      <div
+                        key={`${w?.title || "work"}-${idx}`}
+                        className="col-span-2 flex justify-center"
+                      >
+                        <WorkListItem
+                          w={w}
+                          className="w-full max-w-[calc((100%-0.5rem)/2)] sm:max-w-[calc((100%-0.625rem)/2)]"
+                          onDetails={() =>
+                            setWorkDetail({
+                              title: w.title,
+                              summary: w.summary || "",
+                            })
+                          }
+                        />
+                      </div>
+                    );
+                  }
+                  return (
+                    <WorkListItem
+                      key={`${w?.title || "work"}-${idx}`}
+                      w={w}
+                      onDetails={() =>
+                        setWorkDetail({
+                          title: w.title,
+                          summary: w.summary || "",
+                        })
+                      }
+                    />
+                  );
+                })}
+              </div>
+
+              {/* lg+: 2 centered on top, then 3-column grid for the rest; shorter cards */}
+              <div className="hidden lg:flex flex-col gap-2.5 w-full">
+                {workItems.length > 0 ? (
+                  <div className="flex w-full justify-center gap-2.5">
+                    {workItems.slice(0, 2).map((w, idx) => (
+                      <WorkListItem
+                        key={`${w?.title || "work"}-lg-top-${idx}`}
+                        w={w}
+                        className="h-full w-[calc((100%-1.25rem)/3)] max-w-[calc((100%-1.25rem)/3)] shrink-0"
+                        onDetails={() =>
+                          setWorkDetail({
+                            title: w.title,
+                            summary: w.summary || "",
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                ) : null}
+                {workItems.length > 2 ? (
+                  <div className="grid grid-cols-3 gap-2.5 w-full items-stretch">
+                    {workItems.slice(2).map((w, idx) => (
+                      <WorkListItem
+                        key={`${w?.title || "work"}-lg-grid-${idx + 2}`}
+                        w={w}
+                        onDetails={() =>
+                          setWorkDetail({
+                            title: w.title,
+                            summary: w.summary || "",
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </div>
-          ))}
-          {projects.length === 0 ? (
-            <div className="text-white/80">
-              No projects found yet. Add them under the “## Projects” section in `AliGen-frontend/context/portfolio.md`.
+          )}
+        </>
+      )}
+    </div>
+  ) : showBlogs ? (
+    <div
+      style={{
+        position: "absolute",
+        bottom: "6.5rem",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "min(800px, 92vw)",
+        pointerEvents: "auto",
+      }}
+    >
+      {blogDetail ? (
+        <>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="text-white font-bold text-lg md:text-xl">Blog</div>
+            <button
+              type="button"
+              onClick={() => setBlogDetail(null)}
+              className="rounded-full bg-black px-4 py-2 text-white font-medium border border-white/15 hover:bg-black/80 transition-colors"
+            >
+              ← Back
+            </button>
+          </div>
+          <BlogDetailCard
+            title={blogDetail.title}
+            summary={blogDetail.summary}
+            postUrl={blogDetail.postUrl}
+            imageUrl={blogDetail.imageUrl}
+          />
+        </>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mb-3 px-1">
+            <div className="text-white font-bold text-lg md:text-xl">Blogs</div>
+            <div className="flex items-center gap-2">
+              <a
+                href={blogListUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-white/15 hover:bg-white/25 px-4 py-2 text-white font-medium border border-white/20 transition-colors"
+              >
+                View more
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowBlogs(false);
+                  setBlogDetail(null);
+                }}
+                className="rounded-full bg-black px-4 py-2 text-white font-medium border border-white/15 hover:bg-black/80 transition-colors"
+              >
+                ← Back
+              </button>
             </div>
-          ) : null}
-        </div>
+          </div>
+
+          {blogsLoading ? (
+            <div className="text-white/80 px-1">Loading blogs…</div>
+          ) : blogsError ? (
+            <div className="text-red-200 px-1">{blogsError}</div>
+          ) : blogs.length === 0 ? (
+            <div className="text-white/80 text-sm px-1">
+              No blog posts found yet. Add them under the “## Blogs” section in{" "}
+              <code className="text-white/90">AliGen-frontend/context/portfolio.md</code>.
+            </div>
+          ) : (
+            <div className="w-full max-w-[42rem] mx-auto flex flex-col items-center gap-3">
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {blogs.slice(0, 4).map((b, idx) => (
+                  <div
+                    key={`${b?.title || "blog"}-${idx}`}
+                    className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-xl p-2.5 sm:p-3 lg:rounded-2xl lg:p-2.5 text-white flex flex-col items-center text-center gap-2 sm:gap-2 min-h-[6rem] sm:min-h-[6.25rem] lg:min-h-[6.25rem]"
+                  >
+                    <div className="font-bold text-xs leading-snug sm:text-sm lg:text-sm line-clamp-2 w-full shrink-0">
+                      {b?.title || "Untitled"}
+                    </div>
+                    <div className="flex w-full justify-center sm:flex-1 sm:items-center sm:min-h-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!b?.title) return;
+                          setBlogDetail({
+                            title: b.title,
+                            summary: b.summary || "",
+                            postUrl: b.url || "",
+                            imageUrl: b.imageUrl || "",
+                          });
+                        }}
+                        className="rounded-full bg-white/15 hover:bg-white/25 px-2 py-0.5 sm:px-2.5 sm:py-1 lg:px-2.5 text-white font-medium border border-white/20 transition-colors text-[11px] sm:text-xs lg:text-xs"
+                      >
+                        Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {blogs.length > 4 ? (
+                <div className="flex flex-col items-center gap-3 w-full mt-1">
+                  {blogs.slice(4).map((b, idx) => (
+                    <div
+                      key={`${b?.title || "blog"}-rest-${idx}`}
+                      className="rounded-xl border border-white/20 bg-black/40 backdrop-blur-xl p-2.5 sm:p-3 lg:rounded-2xl lg:p-2.5 text-white w-full max-w-[21rem] flex flex-col items-center text-center gap-2 sm:gap-2 min-h-[6rem] sm:min-h-[6.25rem] lg:min-h-[6.25rem]"
+                    >
+                      <div className="font-bold text-xs leading-snug sm:text-sm lg:text-sm line-clamp-2 w-full shrink-0">
+                        {b?.title || "Untitled"}
+                      </div>
+                      <div className="flex w-full justify-center sm:flex-1 sm:items-center sm:min-h-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!b?.title) return;
+                            setBlogDetail({
+                              title: b.title,
+                              summary: b.summary || "",
+                              postUrl: b.url || "",
+                              imageUrl: b.imageUrl || "",
+                            });
+                          }}
+                          className="rounded-full bg-white/15 hover:bg-white/25 px-2 py-0.5 sm:px-2.5 sm:py-1 lg:px-2.5 text-white font-medium border border-white/20 transition-colors text-[11px] sm:text-xs lg:text-xs"
+                        >
+                          Details
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          )}
+        </>
       )}
     </div>
   ) : showChessCard ? (
@@ -465,11 +835,11 @@ export const UI = ({ hidden,  ...props }) => {
   )}
 
 {/* {isChatVisible && ( */}
-    <div className="mb-2 md:mb-0 absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-2  p-1   bg-[#1a1a1a] rounded-full shadow-lg border border-[#333] pointer-events-auto w-[90%] max-w-[800px]">
+    <div className="mb-2 md:mb-0 absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-2 p-1 bg-[#1a1a1a] rounded-full shadow-lg border border-[#333] pointer-events-auto w-[90%] max-w-[800px] font-sans">
 
   {/* Input Field */}
   <input
-    className="flex-1 bg-transparent border-none text-white text-base sm:text-md md:text-xl pl-7 outline-none"
+    className="flex-1 bg-transparent border-none text-white text-base sm:text-md md:text-xl pl-7 outline-none font-sans font-medium placeholder:text-white/45"
     placeholder="Hey, what's up..."
     ref={input}
     onKeyDown={(e) => {
@@ -489,13 +859,12 @@ export const UI = ({ hidden,  ...props }) => {
     bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
 
     <span className="inline-flex h-full w-full cursor-pointer items-center justify-center 
-    rounded-full bg-slate-950 px-4 py-2 text-sm  md:text-lg lg:text-xl  md:font-medium text-white backdrop-blur-3xl">
+    rounded-full bg-slate-950 px-4 py-2 text-sm md:text-lg lg:text-xl font-sans font-medium text-white backdrop-blur-3xl">
       {loading[userId] || message ? "Sending" : "Send"}
     </span>
   </button>
 </div>
 {/* )} */}
-    </div>
 
     </>
   );

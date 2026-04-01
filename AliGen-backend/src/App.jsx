@@ -34,13 +34,24 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    // Change background based on the isGradientBg state
+    if (isDarkMode) {
+      document.body.style.backgroundImage = "none";
+      document.body.style.backgroundColor = "#06060a";
+      return;
+    }
     if (isGradientBg) {
       document.body.style.backgroundImage = "linear-gradient(0deg, #aaa7a7 40%, #463889 90%)";
+      document.body.style.backgroundColor = "";
     } else {
+      document.body.style.backgroundImage = "none";
       document.body.style.backgroundColor = "black";
     }
-  }, [isGradientBg]); // This will run whenever isGradientBg changes
+  }, [isGradientBg, isDarkMode]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = isDarkMode ? "dark" : "light";
+    document.documentElement.style.colorScheme = isDarkMode ? "dark" : "light";
+  }, [isDarkMode]);
   
 
   useEffect(() => {
@@ -124,9 +135,9 @@ const App = () => {
   };
 
   return (
-    <div className="overflow-hidden h-full bg-cover bg-center" 
-    style={{ position: "relative", height: "100vh", width: "100vw",     
-    }}
+    <div
+      className="overflow-hidden h-full bg-cover bg-center font-sans antialiased"
+      style={{ position: "relative", height: "100vh", width: "100vw" }}
     >
       {/* Preloader */}
       {showPreloader && (
@@ -138,8 +149,18 @@ const App = () => {
       {/* UI Components */}
       <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 50 }}>
       <Leva hidden />
-      <UI  /> 
-      <ButtonMain isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} onToggleBackground={toggleBackground} />
+      <UI
+        isDarkMode={isDarkMode}
+        setIsDarkMode={setIsDarkMode}
+        onToggleBackground={toggleBackground}
+      />
+      <div className="hidden" aria-hidden>
+        <ButtonMain
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
+          onToggleBackground={toggleBackground}
+        />
+      </div>
       </div>
 
       {/* Background */}
@@ -147,7 +168,11 @@ const App = () => {
         height: "100vh",zIndex: 20, overflow: "hidden" }}
         className="overflow-hidden h-full bg-cover bg-center">
        
-        {isGradientBg ? <BackgroundGradientAnimation /> : <WavyBackground />}
+        {isGradientBg ? (
+          <BackgroundGradientAnimation isDarkMode={isDarkMode} />
+        ) : (
+          <WavyBackground isDarkMode={isDarkMode} />
+        )}
       </div>
 
       {/* Canvas */}
@@ -164,7 +189,7 @@ const App = () => {
         }}
       >
         <Experience
-          dotColor={isGradientBg ? "black" : "white"}
+          dotColor={isDarkMode ? "white" : isGradientBg ? "black" : "white"}
           audioRef= {audioRef}
           shadows
           style={{

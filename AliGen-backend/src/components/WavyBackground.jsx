@@ -2,7 +2,11 @@ import { cn } from "../../public/lib/utils";  // Adjust based on the folder stru
 import React, { useEffect, useRef, useState } from "react";
 import { createNoise3D } from "simplex-noise";
 
+const LIGHT_WAVE_COLORS = ["#38bdf8", "#818cf8", "#c084fc", "#e879f9", "#22d3ee"];
+const DARK_WAVE_COLORS = ["#1d4ed8", "#4338ca", "#6d28d9", "#7c3aed", "#0e7490"];
+
 export const WavyBackground = ({
+  isDarkMode = false,
   children,
   className,
   containerClassName,
@@ -23,6 +27,14 @@ export const WavyBackground = ({
     ctx,
     canvas;
   const canvasRef = useRef(null);
+  const paletteRef = useRef(colors ?? (isDarkMode ? DARK_WAVE_COLORS : LIGHT_WAVE_COLORS));
+  const fillRef = useRef(backgroundFill ?? (isDarkMode ? "#030712" : "black"));
+
+  useEffect(() => {
+    paletteRef.current = colors ?? (isDarkMode ? DARK_WAVE_COLORS : LIGHT_WAVE_COLORS);
+    fillRef.current = backgroundFill ?? (isDarkMode ? "#030712" : "black");
+  }, [isDarkMode, colors, backgroundFill]);
+
   const getSpeed = () => {
     switch (speed) {
       case "slow":
@@ -49,14 +61,8 @@ export const WavyBackground = ({
     render();
   };
 
-  const waveColors = colors ?? [
-    "#38bdf8",
-    "#818cf8",
-    "#c084fc",
-    "#e879f9",
-    "#22d3ee",
-  ];
   const drawWave = (n) => {
+    const waveColors = paletteRef.current;
     nt += getSpeed();
     for (i = 0; i < n; i++) {
       ctx.beginPath();
@@ -73,7 +79,7 @@ export const WavyBackground = ({
 
   let animationId;
   const render = () => {
-    ctx.fillStyle = backgroundFill || "black";
+    ctx.fillStyle = fillRef.current;
     ctx.globalAlpha = waveOpacity || 0.5;
     ctx.fillRect(0, 0, w, h);
     drawWave(5);
