@@ -8,8 +8,7 @@
 # https://docs.railway.com/guides/monorepo
 
 [build]
-# Railpack is Railway’s current builder (Nixpacks is legacy/deprecated for new setups).
-builder = "RAILPACK"
+builder = "nixpacks"
 buildCommand = "npm install -g corepack && corepack enable && cd AliGen-backend && yarn install"
 watchPatterns = ["AliGen-backend/**"]
 

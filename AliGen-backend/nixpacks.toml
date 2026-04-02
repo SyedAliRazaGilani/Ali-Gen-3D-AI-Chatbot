@@ -1,7 +1,4 @@
-# Legacy Nixpacks plan file. Railway’s default builder is now Railpack, which may ignore this file.
-# If you set Root Directory to AliGen-backend and use Railpack, prefer an explicit build command:
-#   npm install -g corepack && corepack enable && yarn install
-# (Same as root railway.toml, without `cd`.)
+# Railway / Nixpacks — install Yarn 4 via Corepack (corepack is not always on PATH in the image).
 [variables]
 NIXPACKS_NODE_VERSION = "18"
 
