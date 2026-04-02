@@ -15,6 +15,7 @@ const App = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [isGradientBg, setIsGradientBg] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
   const audioRef = useRef(null);
   const audioContextRef = useRef(null);
 
@@ -52,6 +53,19 @@ const App = () => {
     document.documentElement.dataset.theme = isDarkMode ? "dark" : "light";
     document.documentElement.style.colorScheme = isDarkMode ? "dark" : "light";
   }, [isDarkMode]);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 640px)");
+    const apply = () => setIsSmallScreen(Boolean(mql.matches));
+    apply();
+    if (typeof mql.addEventListener === "function") {
+      mql.addEventListener("change", apply);
+      return () => mql.removeEventListener("change", apply);
+    }
+    // Safari fallback
+    mql.addListener(apply);
+    return () => mql.removeListener(apply);
+  }, []);
   
 
   useEffect(() => {
@@ -200,7 +214,8 @@ const App = () => {
         camera={{ position: [0, 0, 1], fov: 30 }}
         style={{
           position: "absolute",
-          top: "50%",
+          // On small screens, push avatar down so the mobile navbar doesn't cover the hair/head.
+          top: isSmallScreen ? "56%" : "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
           overflow: "hidden",

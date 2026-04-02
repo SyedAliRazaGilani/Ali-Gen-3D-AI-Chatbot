@@ -8,8 +8,6 @@
 
 [**View demo**](https://aligilani.com) · [**GitHub**](https://github.com/SyedAliRazaGilani)
 
-*Replace the demo URL above if your deployed AliGen instance lives elsewhere.*
-
 </div>
 
 ---
