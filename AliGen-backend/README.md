@@ -1,6 +1,6 @@
 # AliGen API (Express)
 
-Express BFF: `/chat`, `/projects`, `/blogs`, `/work`. Loads `context/portfolio.md`, `context/portfolio-llm.md`, and static audio under `audios/`.
+Express server: `/chat`, `/projects`, `/blogs`, `/work`. Loads `context/portfolio.md`, `context/portfolio-llm.md`, and static audio under `audios/`.
 
 ## Setup
 

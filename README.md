@@ -6,7 +6,7 @@
 
 **Interactive 3D avatar** that speaks, lip-syncs, and answers visitors about Ali Gilani’s work — powered by **React Three Fiber**, **Groq**, and **Amazon Polly**.
 
-[**View demo**](https://aligilani.com) · [**GitHub**](https://github.com/SyedAliRazaGilani)
+[**View demo**](https://aligen.vercel.app) · [**GitHub**](https://github.com/SyedAliRazaGilani)
 
 </div>
 
@@ -33,8 +33,8 @@ AliGen is a portfolio experience that combines a **glTF avatar** (Avaturn-style 
 
 | Layer | Role |
 |--------|------|
-| **`AliGen-frontend`** | Vite + React SPA, Three.js scene, calls BFF via `VITE_API_URL` |
-| **`AliGen-backend`** | Express BFF: `/chat`, `/projects`, `/blogs`, `/work`, static audio, Polly + FFmpeg/Rhubarb pipeline |
+| **`AliGen-frontend`** | Vite + React SPA, Three.js scene, calls the API via `VITE_API_URL` |
+| **`AliGen-backend`** | Express API: `/chat`, `/projects`, `/blogs`, `/work`, static audio, Polly + FFmpeg/Rhubarb pipeline |
 
 Template button clicks return **canned audio + lipsync** (no Groq/Polly for those turns). Typed messages hit **Groq** then **Polly** for TTS.
 
@@ -54,7 +54,7 @@ Template button clicks return **canned audio + lipsync** (no Groq/Polly for thos
 | Folder | App |
 |--------|-----|
 | **`AliGen-frontend`** | Vite + React + Three.js (browser UI) |
-| **`AliGen-backend`** | Express BFF (`index.js`), `context/*.md`, `audios/` |
+| **`AliGen-backend`** | Express server (`index.js`), `context/*.md`, `audios/` |
 
 ---
 
@@ -76,13 +76,13 @@ yarn install
 yarn dev
 ```
 
-Set **`VITE_API_URL`** in `AliGen-frontend/.env` to your BFF origin (e.g. `http://localhost:3000`).
+Set **`VITE_API_URL`** in `AliGen-frontend/.env` to your API origin (e.g. `http://localhost:3000`).
 
 ---
 
 ## 🔐 Environment Variables
 
-**Express BFF** — `AliGen-backend/.env`:
+**Express server** — `AliGen-backend/.env`:
 
 | Variable | Purpose |
 |----------|---------|
@@ -95,7 +95,7 @@ Set **`VITE_API_URL`** in `AliGen-frontend/.env` to your BFF origin (e.g. `http:
 
 | Variable | Purpose |
 |----------|---------|
-| `VITE_API_URL` | Base URL of the Express BFF |
+| `VITE_API_URL` | Base URL of the Express API |
 | `VITE_CSGO_PROFILE_URL` | Optional override for Steam profile link (gaming card) |
 
 ---
@@ -128,9 +128,9 @@ Set service **root** to `AliGen-frontend`, build `yarn install && yarn build`, p
 - **Node:** `package.json` sets `"engines": { "node": "24.x" }` for current Vercel defaults ([Vercel Node support](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions)).
 - **Build:** `corepack enable && yarn install && yarn build` — prefer **without** `--immutable` on Vercel unless you need strict lockfile CI (immutable often fails when the platform’s install cache differs slightly).
 - **Env:** `VITE_API_URL` = your Railway API origin (no trailing slash).
-- **Railway CORS:** set `FRONTEND_URL` on the BFF to your Vercel URL after the first deploy.
+- **Railway CORS:** set `FRONTEND_URL` on the server to your Vercel URL after the first deploy.
 
-### Backend on Railway (Express BFF)
+### Backend on Railway (Express server)
 
 These steps deploy **`AliGen-backend`** only (the API that serves `/chat`, `/projects`, `/blogs`, `/work`).
 
@@ -169,10 +169,10 @@ These steps deploy **`AliGen-backend`** only (the API that serves `/chat`, `/pro
    VITE_API_URL=https://your-service.up.railway.app
    ```
 
-   Rebuild/redeploy the frontend so the browser calls the Railway BFF.
+   Rebuild/redeploy the frontend so the browser calls the Railway server.
 
 7. **FFmpeg / Rhubarb (optional)**  
-   The BFF can run **FFmpeg** and **Rhubarb** for lip-sync on Polly-generated audio. The default Railway Node image may **not** include those binaries. If lip-sync fails in logs, typed chat may still return audio with `lipsync: null`. To enable it on Railway you’d add a **Dockerfile** (recommended) that installs them, or otherwise make the binaries available on `PATH`.
+   The server can run **FFmpeg** and **Rhubarb** for lip-sync on Polly-generated audio. The default Railway Node image may **not** include those binaries. If lip-sync fails in logs, typed chat may still return audio with `lipsync: null`. To enable it on Railway you’d add a **Dockerfile** (recommended) that installs them, or otherwise make the binaries available on `PATH`.
 
 8. **Health check**  
    There is no dedicated `/health` route yet; Railway can use the default **TCP** check on `PORT` or hit `GET /projects` once the service is up.
@@ -201,5 +201,5 @@ If **`AliGen-frontend`** already contains Vite and **`AliGen-backend`** contains
 ---
 
 <p align="center">
-  <b>AliGen</b> — 3D AI portfolio chatbot · <a href="https://aligilani.com">aligilani.com</a>
+  <b>AliGen</b> — 3D AI portfolio chatbot · <a href="https://aligen.vercel.app">aligen.vercel.app</a>
 </p>

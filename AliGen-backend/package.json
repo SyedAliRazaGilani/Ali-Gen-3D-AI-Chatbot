@@ -1,7 +1,7 @@
 {
   "name": "aligen-backend",
   "version": "1.0.0",
-  "description": "Chatbot-Zoe-Backend",
+  "description": "AliGen Express API",
   "main": "index.js",
   "type": "module",
   "engines": {
