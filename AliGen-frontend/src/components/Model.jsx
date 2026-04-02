@@ -312,23 +312,24 @@ const Model= ({audioRef}) => {
 
         if (currentAudioTime !== undefined) {
           // Faster "attack" makes consonants (M/B/P) actually close the mouth.
-          const ACTIVE_VISEME_SPEED = 0.65;
-          const RESET_VISEME_SPEED = 0.35;
+          const ACTIVE_VISEME_SPEED = 0.35;
+          const RESET_VISEME_SPEED = 0.2;
           const VISEME_STRENGTH = {
             // Keep closures strong
-            viseme_PP: 1,
+            viseme_PP: 0.78,
             // Reduce vowel openness to show less teeth
-            viseme_aa: 0.7,
-            viseme_E: 0.75,
-            viseme_I: 0.75,
-            viseme_O: 0.75,
-            viseme_U: 0.75,
+            viseme_aa: 0.55,
+            viseme_E: 0.6,
+            viseme_I: 0.6,
+            viseme_O: 0.6,
+            viseme_U: 0.6,
             // Others
-            viseme_kk: 0.9,
-            viseme_FF: 0.9,
-            viseme_TH: 0.9,
-            viseme_SS: 0.85,
-            viseme_sil: 1,
+            viseme_kk: 0.75,
+            // F/V “lip bite” — keep very soft (nearly off)
+            viseme_FF: 0.15,
+            viseme_TH: 0.75,
+            viseme_SS: 0.7,
+            viseme_sil: 0.9,
           };
 
           for (let i = 0; i < lipsync.mouthCues.length; i++) {
@@ -344,7 +345,7 @@ const Model= ({audioRef}) => {
                 lerpMorphTarget(
                   morphName,
                   strength,
-                  morphName === "viseme_PP" ? 0.8 : ACTIVE_VISEME_SPEED
+                  morphName === "viseme_PP" ? 0.55 : ACTIVE_VISEME_SPEED
                 ); // Apply morph target quickly
               }
               break;

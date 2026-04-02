@@ -543,8 +543,8 @@ ${chatHistoryText || "(none)"}
 You are AliGen, a portfolio assistant for Ali Gilani. Answer ONLY from PORTFOLIO CONTEXT. If missing, say so and offer contact@aligilani.com.
 Reply with ONE JSON object in an array (max 1 message) with keys: text, facialExpression, animation.
 facialExpression: smile | sad | angry | default
-animation: Angry | Bicep | Idle | Laughing | Sad | Salute | Stretching | Thinking
-Answer in a friendly and engaging tone. No asterisks or backticks in text. Max 2–3 short sentences. Vary openings; don't echo chat redundantly.
+animation: Angry | Idle | Laughing | Sad | Salute | Stretching | Thinking
+Answer in a friendly and engaging tone. No need to laugh at everything. No asterisks or backticks in text. Max 2–3 short sentences. Vary openings; don't echo chat redundantly.
 
 User: ${trimmedUserMessage}`;
   
@@ -583,7 +583,6 @@ User: ${trimmedUserMessage}`;
       // Ensure animation name is one of the supported clips.
       const allowedAnimations = new Set([
         "Angry",
-        "Bicep",
         "Idle",
         "Laughing",
         "Sad",
