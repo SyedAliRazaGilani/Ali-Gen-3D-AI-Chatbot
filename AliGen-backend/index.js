@@ -311,8 +311,10 @@ const execCommand = (command) => {
 
 // Lip-sync tools (optional in production; required only if you want mouthCues for Polly-generated replies).
 // Prefer env vars, otherwise fall back to common locations.
-const ffmpegPath = (process.env.FFMPEG_PATH || "ffmpeg").trim();
-const rhubarbPath = (process.env.RHUBARB_PATH || "./bin/rhubarb").trim();
+// const ffmpegPath = (process.env.FFMPEG_PATH || "ffmpeg").trim();
+// const rhubarbPath = (process.env.RHUBARB_PATH || "./bin/rhubarb").trim();
+const ffmpegPath = "./.local/bin/ffmpeg"; 
+const rhubarbPath = "./.local/bin/Rhubarb-Lip-Sync-1.13.0-Linux/rhubarb";
 
 const logToolStatus = async (label, p) => {
   if (!p) return;

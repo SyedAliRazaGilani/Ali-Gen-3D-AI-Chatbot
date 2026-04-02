@@ -140,18 +140,13 @@ These steps deploy **`AliGen-backend`** only (the API that serves `/chat`, `/pro
    In [Railway](https://railway.app), **New Project** → **Deploy from GitHub** → select this repository.
 
 2. **Monorepo: backend lives in `AliGen-backend/`**  
-   **Option A — no “Root directory” in the UI:** this repo includes **`railway.toml` at the repository root**. It sets `buildCommand` and `startCommand` to `cd AliGen-backend && …`, so Railway builds from the repo root but installs and runs the Express app in **`AliGen-backend`**. Clear any custom build/start overrides in the dashboard so the file is used (config in the repo overrides empty dashboard fields; if you set commands in the UI, they can override the file — remove duplicates).  
+   In Railway, open the **service** → **Settings** and set **Root Directory** to **`AliGen-backend`** (sometimes shown under **Source** or **Build**).  
+   If your Railway UI doesn’t expose Root Directory, set build/start commands to `cd AliGen-backend && …` as shown below (per [Railway monorepo docs](https://docs.railway.com/guides/monorepo)).
 
-   **Option B — Root directory in the UI:** open the **service** (click the service on the project canvas) → **Settings** → scroll to **Root directory** (sometimes under **Source** or **Build**). Set it to **`AliGen-backend`**. Then you can use **`AliGen-backend/nixpacks.toml`** and start command **`yarn start`** only. If you still don’t see Root directory, use Option A.
-
-3. **Build & start (summary)**  
-   - **With root `railway.toml`:** install = `npm install -g corepack && corepack enable && cd AliGen-backend && yarn install`; start = `cd AliGen-backend && yarn start`.  
-   - **With Root directory = `AliGen-backend`:** leave dashboard build/start empty and rely on **`AliGen-backend/nixpacks.toml`**, or use:  
-     `npm install -g corepack && corepack enable && yarn install` and **`yarn start`**.  
-
+3. **Build & start**  
+   - **Build command:** `npm install -g corepack && corepack enable && cd AliGen-backend && yarn install`  
+   - **Start command:** `cd AliGen-backend && yarn start`  
    Railway sets **`PORT`** automatically. Do **not** use `apt-get` / `init.sh` here.
-
-   Per [Railway monorepo docs](https://docs.railway.com/guides/monorepo), config-as-code paths are from the **repo root** unless you use per-package `railway.toml` inside **`AliGen-backend/`** together with Root directory.
 
 4. **Environment variables** (service → **Variables**)
 
@@ -179,7 +174,7 @@ These steps deploy **`AliGen-backend`** only (the API that serves `/chat`, `/pro
    Rebuild/redeploy the frontend so the browser calls the Railway BFF.
 
 7. **FFmpeg / Rhubarb (optional)**  
-   The BFF can run **FFmpeg** and **Rhubarb** for lip-sync on Polly-generated audio. The default Railway Node image may **not** include those binaries. If lip-sync fails in logs, typed chat may still return audio with `lipsync: null`. To enable Rhubarb on Railway you’d add a **Dockerfile** or **Nixpacks** config that installs them — not required for a first deploy.
+   The BFF can run **FFmpeg** and **Rhubarb** for lip-sync on Polly-generated audio. The default Railway Node image may **not** include those binaries. If lip-sync fails in logs, typed chat may still return audio with `lipsync: null`. To enable it on Railway you’d add a **Dockerfile** (recommended) that installs them, or otherwise make the binaries available on `PATH`.
 
 8. **Health check**  
    There is no dedicated `/health` route yet; Railway can use the default **TCP** check on `PORT` or hit `GET /projects` once the service is up.
