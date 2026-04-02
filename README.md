@@ -130,23 +130,19 @@ These steps deploy **`AliGen-backend`** only (the API that serves `/chat`, `/pro
 1. **Create a Railway project**  
    In [Railway](https://railway.app), **New Project** → **Deploy from GitHub** → select this repository.
 
-2. **Point the service at the backend folder (monorepo)**  
-   Open the service → **Settings** → **Root Directory** → set to **`AliGen-backend`**.  
-   This makes installs and `node index.js` run from the folder that contains `package.json` and `index.js`.
+2. **Monorepo: backend lives in `AliGen-backend/`**  
+   **Option A — no “Root directory” in the UI:** this repo includes **`railway.toml` at the repository root**. It sets `buildCommand` and `startCommand` to `cd AliGen-backend && …`, so Railway builds from the repo root but installs and runs the Express app in **`AliGen-backend`**. Clear any custom build/start overrides in the dashboard so the file is used (config in the repo overrides empty dashboard fields; if you set commands in the UI, they can override the file — remove duplicates).  
 
-3. **Build & start**  
-   **`AliGen-backend/nixpacks.toml`** tells Nixpacks to run `npm install -g corepack`, `corepack enable`, then `yarn install` (fixes **`corepack: not found`** on Railway).  
-   - In Railway → service **Settings** → leave **Custom Build Command** **empty** (or remove it) so Nixpacks uses `nixpacks.toml`.  
-   - **Start command:** `yarn start` (or `node index.js`).  
-   Railway sets **`PORT`** automatically; the app uses `process.env.PORT` (fallback `3000` locally).
+   **Option B — Root directory in the UI:** open the **service** (click the service on the project canvas) → **Settings** → scroll to **Root directory** (sometimes under **Source** or **Build**). Set it to **`AliGen-backend`**. Then you can use **`AliGen-backend/nixpacks.toml`** and start command **`yarn start`** only. If you still don’t see Root directory, use Option A.
 
-   **Do not** paste Render/old templates here: no `apt-get`, no `init.sh` (this repo has no `init.sh` under `AliGen-backend`), and **`corepack` alone** often fails — install it with **`npm install -g corepack`** first.
+3. **Build & start (summary)**  
+   - **With root `railway.toml`:** install = `npm install -g corepack && corepack enable && cd AliGen-backend && yarn install`; start = `cd AliGen-backend && yarn start`.  
+   - **With Root directory = `AliGen-backend`:** leave dashboard build/start empty and rely on **`AliGen-backend/nixpacks.toml`**, or use:  
+     `npm install -g corepack && corepack enable && yarn install` and **`yarn start`**.  
 
-   **One-line build** (only if you override Nixpacks and skip `nixpacks.toml`):
+   Railway sets **`PORT`** automatically. Do **not** use `apt-get` / `init.sh` here.
 
-   ```bash
-   npm install -g corepack && corepack enable && yarn install
-   ```
+   Per [Railway monorepo docs](https://docs.railway.com/guides/monorepo), config-as-code paths are from the **repo root** unless you use per-package `railway.toml` inside **`AliGen-backend/`** together with Root directory.
 
 4. **Environment variables** (service → **Variables**)
 

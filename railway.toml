@@ -1,0 +1,16 @@
+# Deploy the Express BFF from this monorepo without Railway's "Root directory" UI.
+# Build/start run from repo root with `cd AliGen-backend`.
+#
+# If this Railway project also has a second service for the Vite app (same repo),
+# this file would apply project-wide — use a separate Railway project for the API,
+# or set that service's build/start only in the dashboard per Railway docs.
+#
+# https://docs.railway.com/guides/monorepo
+
+[build]
+builder = "nixpacks"
+buildCommand = "npm install -g corepack && corepack enable && cd AliGen-backend && yarn install"
+watchPatterns = ["AliGen-backend/**"]
+
+[deploy]
+startCommand = "cd AliGen-backend && yarn start"
