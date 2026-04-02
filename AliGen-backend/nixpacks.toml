@@ -1,0 +1,14 @@
+# Railway / Nixpacks — install Yarn 4 via Corepack (corepack is not always on PATH in the image).
+[variables]
+NIXPACKS_NODE_VERSION = "18"
+
+[phases.install]
+cmds = [
+  "npm install -g corepack",
+  "corepack enable",
+  "yarn install",
+]
+
+# No compile step; dependency install is enough.
+[phases.build]
+cmds = []

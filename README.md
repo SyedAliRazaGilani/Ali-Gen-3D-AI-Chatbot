@@ -134,11 +134,19 @@ These steps deploy **`AliGen-backend`** only (the API that serves `/chat`, `/pro
    Open the service → **Settings** → **Root Directory** → set to **`AliGen-backend`**.  
    This makes installs and `node index.js` run from the folder that contains `package.json` and `index.js`.
 
-3. **Build & start (usually auto-detected)**  
-   - **Build command** (if Railway asks): `yarn install`  
-     - If you use Yarn Berry and builds fail, try: `corepack enable && yarn install`  
-   - **Start command:** `yarn start` (runs `node index.js` per `package.json`)  
-   Railway injects **`PORT`** automatically — the app listens on `process.env.PORT` (with a local fallback to `3000`).
+3. **Build & start**  
+   **`AliGen-backend/nixpacks.toml`** tells Nixpacks to run `npm install -g corepack`, `corepack enable`, then `yarn install` (fixes **`corepack: not found`** on Railway).  
+   - In Railway → service **Settings** → leave **Custom Build Command** **empty** (or remove it) so Nixpacks uses `nixpacks.toml`.  
+   - **Start command:** `yarn start` (or `node index.js`).  
+   Railway sets **`PORT`** automatically; the app uses `process.env.PORT` (fallback `3000` locally).
+
+   **Do not** paste Render/old templates here: no `apt-get`, no `init.sh` (this repo has no `init.sh` under `AliGen-backend`), and **`corepack` alone** often fails — install it with **`npm install -g corepack`** first.
+
+   **One-line build** (only if you override Nixpacks and skip `nixpacks.toml`):
+
+   ```bash
+   npm install -g corepack && corepack enable && yarn install
+   ```
 
 4. **Environment variables** (service → **Variables**)
 
