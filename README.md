@@ -199,7 +199,6 @@ If **`AliGen-frontend`** already contains Vite and **`AliGen-backend`** contains
 
 - **3D / React Three** — [pmndrs](https://github.com/pmndrs) ecosystem  
 - **Lip-sync cues** — [Rhubarb Lip Sync](https://github.com/DanielSWolf/rhubarb-lip-sync) (or compatible JSON format)  
-- **AliGen** — portfolio assistant for **Ali Gilani**
 
 ---
 
