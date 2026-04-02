@@ -309,34 +309,38 @@ const execCommand = (command) => {
   });
 };
 
-// const ffmpegPath = "./.local/bin/ffmpeg"; 
-// const rhubarbPath = "./.local/bin/Rhubarb-Lip-Sync-1.13.0-Linux/rhubarb";
-const ffmpegPath = process.env.FFMPEG_PATH;
-const rhubarbPath = process.env.RHUBARB_PATH;
+// Lip-sync tools (optional in production; required only if you want mouthCues for Polly-generated replies).
+// Prefer env vars, otherwise fall back to common locations.
+const ffmpegPath = (process.env.FFMPEG_PATH || "ffmpeg").trim();
+const rhubarbPath = (process.env.RHUBARB_PATH || "./bin/rhubarb").trim();
 
+const logToolStatus = async (label, p) => {
+  if (!p) return;
+  // If a bare command is provided (e.g. "ffmpeg"), don't pre-check with fs.access.
+  if (!p.includes("/") && !p.includes("\\") && !p.includes(".")) {
+    console.log(`index.js: ${label} set to command: ${p}`);
+    return;
+  }
+  try {
+    await fs.access(p, fs.constants.F_OK);
+    console.log(`index.js: Using ${label} at: ${p}`);
+  } catch {
+    console.warn(`index.js: ${label} not found at: ${p}`);
+  }
+};
 
-// Check if the files are accessible
-fs.access(ffmpegPath, fs.constants.F_OK)
-.then(() => {
-  console.log(`index.js: Using FFmpeg at: ${ffmpegPath}`);
-})
-.catch(() => {
-  console.error("FFmpeg not found or inaccessible.");
-});
-
-fs.access(rhubarbPath, fs.constants.F_OK)
-.then(() => {
-  console.log(`index.js: Using Rhubarb at: ${rhubarbPath}`);
-})
-.catch(() => {
-  console.error("Rhubarb not found or inaccessible.");
-});
+await logToolStatus("FFmpeg", ffmpegPath);
+await logToolStatus("Rhubarb", rhubarbPath);
 
 
 const lipSyncMessage = async (userId, messageIndex) => { 
   const time = new Date().getTime();
   console.log(`Starting conversion for message ${messageIndex} of user ${userId}`);
   
+  if (!ffmpegPath || !rhubarbPath) {
+    throw new Error("FFmpeg/Rhubarb paths not configured");
+  }
+
   // Convert mp3 to wav using ffmpeg
   await execCommand(`"${ffmpegPath}" -y -i "audios/${userId}_message_${messageIndex}.mp3" "audios/${userId}_message_${messageIndex}.wav"`);
   
@@ -530,16 +534,16 @@ app.post("/chat", async (req, res) => {
     try {
           // portfolioLlmContext = portfolio-llm.md ONLY (never portfolio.md). Template buttons never reach here.
           const prompt = `PORTFOLIO CONTEXT (from ${PORTFOLIO_LLM_PATH} only — not the full site markdown):
-${portfolioLlmContext || "[No portfolio-llm.md loaded — say you don't have that detail and offer contact@aligilani.com]"}
+${portfolioLlmContext || "[No portfolio-llm.md loaded — Only say you don't have that detail and offer contact@aligilani.com]"}
 
 Recent chat (newest last, capped server-side):
 ${chatHistoryText || "(none)"}
 
-You are AliGen for Ali Gilani. Answer ONLY from PORTFOLIO CONTEXT. If missing, say so and offer contact@aligilani.com.
+You are AliGen, a portfolio assistant for Ali Gilani. Answer ONLY from PORTFOLIO CONTEXT. If missing, say so and offer contact@aligilani.com.
 Reply with ONE JSON object in an array (max 1 message) with keys: text, facialExpression, animation.
-facialExpression: smile | sad | angry | surprised | default
-animation: Angry | Bicep | Idle | Laughing | Sad | Salute | Stretching | Surprised | Thinking
-No asterisks or backticks in text. Max 2–3 short sentences. Vary openings; don't echo chat redundantly.
+facialExpression: smile | sad | angry | default
+animation: Angry | Bicep | Idle | Laughing | Sad | Salute | Stretching | Thinking
+Answer in a friendly and engaging tone. No asterisks or backticks in text. Max 2–3 short sentences. Vary openings; don't echo chat redundantly.
 
 User: ${trimmedUserMessage}`;
   
@@ -564,7 +568,7 @@ User: ${trimmedUserMessage}`;
             text: "wow there Slow down, you just hit the APIs limit, even APIs need a coffee break. Try again in some time",
             audio: await audioFileToBase64("audios/api-limit-error.wav"),
             lipsync: await readJsonTranscript("audios/api-limit-error.json"),
-            facialExpression: "surprised",
+            facialExpression: "Laughing",
             animation: "Idle",
           }],
         });
@@ -584,7 +588,6 @@ User: ${trimmedUserMessage}`;
         "Sad",
         "Salute",
         "Stretching",
-        "Surprised",
         "Thinking",
       ]);
       messages = messages.map((m) => ({

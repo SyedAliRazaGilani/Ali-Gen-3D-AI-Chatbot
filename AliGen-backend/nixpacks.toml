@@ -2,11 +2,19 @@
 [variables]
 NIXPACKS_NODE_VERSION = "18"
 
+[phases.setup]
+# Install system dependencies via Nix (preferred over apt-get on Railway/Nixpacks).
+# "..." keeps the default packages and adds to them.
+nixPkgs = ["...", "ffmpeg", "curl", "unzip"]
+
 [phases.install]
 cmds = [
   "npm install -g corepack",
   "corepack enable",
   "yarn install",
+  # Install Rhubarb lip-sync (Linux) into ./bin for runtime usage.
+  "mkdir -p bin",
+  "if [ ! -f bin/rhubarb ]; then curl -L -o /tmp/rhubarb.zip https://github.com/DanielSWolf/rhubarb-lip-sync/releases/download/v1.13.0/Rhubarb-Lip-Sync-1.13.0-Linux.zip && unzip -o /tmp/rhubarb.zip -d /tmp/rhubarb && cp /tmp/rhubarb/Rhubarb-Lip-Sync-1.13.0-Linux/rhubarb bin/rhubarb && chmod +x bin/rhubarb; fi",
 ]
 
 # No compile step; dependency install is enough.
