@@ -56,7 +56,8 @@ export default function AliGenNavbar({ navLogo, isDarkMode, setIsDarkMode }) {
 
   const openStory = (key) => {
     setMoreOpen(false);
-    setMobileOpen(false);
+    // Keep the mobile menu state unchanged so closing the popup doesn't also
+    // collapse the menu behind it (mobile UX: user can close sheet separately).
     setStoryOpen(key);
   };
 
@@ -268,7 +269,7 @@ export default function AliGenNavbar({ navLogo, isDarkMode, setIsDarkMode }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 z-[70] bg-black/45 backdrop-blur-[2px] p-4 sm:p-6 lg:hidden flex items-start justify-center"
+            className="fixed inset-0 z-[70] bg-black/45 backdrop-blur-[2px] p-4 sm:p-6 lg:hidden flex items-start justify-center pointer-events-auto"
           >
             <motion.div
               initial={{ opacity: 0, y: -14, scale: 0.98 }}
@@ -276,7 +277,7 @@ export default function AliGenNavbar({ navLogo, isDarkMode, setIsDarkMode }) {
               exit={{ opacity: 0, y: -12, scale: 0.98 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
-              className="relative mt-[4.5rem] sm:mt-[4.75rem] w-[88vw] sm:w-[78vw] md:w-[56vw] max-w-[560px] max-h-[70vh] overflow-y-auto rounded-2xl border border-white/12 bg-[rgba(10,10,12,0.86)] backdrop-blur-xl p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5),0_0_28px_rgba(168,85,247,0.2)]"
+              className="relative mt-[4.5rem] sm:mt-[4.75rem] w-[88vw] sm:w-[78vw] md:w-[56vw] max-w-[560px] max-h-[70vh] overflow-y-auto rounded-2xl border border-white/12 bg-[rgba(10,10,12,0.86)] backdrop-blur-xl p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5),0_0_28px_rgba(168,85,247,0.2)] pointer-events-auto"
             >
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
@@ -352,6 +353,18 @@ export default function AliGenNavbar({ navLogo, isDarkMode, setIsDarkMode }) {
                   Connect
                 </h3>
                 <ul className="flex flex-col gap-1">
+                  <li>
+                    <a
+                      href={`${SITE}/Contact`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/90 hover:bg-white/8"
+                    >
+                      <Mail className="w-4 h-4 text-white/55" />
+                      Book a Call
+                      <ExternalLink className="ml-auto w-3.5 h-3.5 text-white/35" />
+                    </a>
+                  </li>
                   <li>
                     <a
                       href="https://github.com/SyedAliRazaGilani"

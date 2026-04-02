@@ -278,7 +278,7 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
           className="lg:mb-4 xl:mb-0 -mb-2  relative inline-flex h-18 overflow-hidden rounded-full p-[2px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
         >
           <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
-          <span className="mb-1  inline-flex font-sans font-medium h-full w-full cursor-pointer items-center justify-center rounded-full bg-gray-300 px-5 py-2 md:px-10 md:py-4 lg:px-8 lg:py-5 md:text-xl xl:px-7 xl:py-3  text-black backdrop-blur-3xl">
+          <span className="mb-1 inline-flex font-sans font-medium h-full w-full cursor-pointer items-center justify-center rounded-full bg-gray-300 px-5 py-2 md:px-10 md:py-4 lg:px-8 lg:py-5 md:text-xl xl:px-6 xl:py-2.5 xl:text-lg 2xl:px-5 2xl:py-2 2xl:text-base text-black backdrop-blur-3xl">
             {msg.text}
           </span>
         </button>
@@ -848,11 +848,11 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
   )}
 
 {/* {isChatVisible && ( */}
-    <div className="mb-2 md:mb-0 absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-2 p-1 bg-[#1a1a1a] rounded-full shadow-lg border border-[#333] pointer-events-auto w-[90%] max-w-[800px] font-sans">
+    <div className="mb-2 md:mb-0 absolute bottom-2 left-1/2 transform -translate-x-1/2 flex items-center gap-2 p-1 bg-[#1a1a1a] rounded-full shadow-lg border border-[#333] pointer-events-auto w-[90%] max-w-[800px] font-sans xl:max-w-[720px] 2xl:max-w-[660px]">
 
   {/* Input Field */}
   <input
-    className="flex-1 bg-transparent border-none text-white text-base sm:text-md md:text-xl pl-7 outline-none font-sans font-medium placeholder:text-white/45"
+    className="flex-1 bg-transparent border-none text-white text-base sm:text-md md:text-xl xl:text-lg 2xl:text-base pl-7 xl:pl-6 2xl:pl-5 outline-none font-sans font-medium placeholder:text-white/45"
     placeholder="Hey, what's up..."
     ref={input}
     onKeyDown={(e) => {
@@ -864,7 +864,7 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
   <button
     disabled={loading[userId] || message}
     onClick={sendMessage}
-    className="relative md:h-16 lg:h-20 xl:h-16 h-16 w-[30%] sm:w-[40%] md:w-[25%] max-w-[180px] 
+    className="relative md:h-16 lg:h-20 xl:h-14 2xl:h-12 h-16 w-[30%] sm:w-[40%] md:w-[25%] max-w-[180px] xl:max-w-[160px] 2xl:max-w-[140px]
     overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-slate-400 
     focus:ring-offset-2 focus:ring-offset-slate-50"
   >
@@ -872,7 +872,7 @@ export const UI = ({ hidden, isDarkMode, setIsDarkMode, onToggleBackground, ...p
     bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
 
     <span className="inline-flex h-full w-full cursor-pointer items-center justify-center 
-    rounded-full bg-slate-950 px-4 py-2 text-sm md:text-lg lg:text-xl font-sans font-medium text-white backdrop-blur-3xl">
+    rounded-full bg-slate-950 px-4 py-2 text-sm md:text-lg lg:text-xl xl:text-base 2xl:text-sm font-sans font-medium text-white backdrop-blur-3xl">
       {loading[userId] || message ? "Sending" : "Send"}
     </span>
   </button>
