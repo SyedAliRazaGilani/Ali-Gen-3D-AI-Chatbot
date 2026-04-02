@@ -123,6 +123,15 @@ Set **`VITE_API_URL`** in `AliGen-frontend/.env` to your BFF origin (e.g. `http:
 
 Set service **root** to `AliGen-frontend`, build `yarn install && yarn build`, publish `dist`. See `AliGen-frontend/render.yaml`.
 
+### Frontend on Vercel
+
+- **Root Directory:** `AliGen-frontend`
+- **Framework:** Vite (or Other + output `dist`)
+- **Node:** `package.json` sets `"engines": { "node": "24.x" }` for current Vercel defaults ([Vercel Node support](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions)).
+- **Build:** `corepack enable && yarn install && yarn build` — prefer **without** `--immutable` on Vercel unless you need strict lockfile CI (immutable often fails when the platform’s install cache differs slightly).
+- **Env:** `VITE_API_URL` = your Railway API origin (no trailing slash).
+- **Railway CORS:** set `FRONTEND_URL` on the BFF to your Vercel URL after the first deploy.
+
 ### Backend on Railway (Express BFF)
 
 These steps deploy **`AliGen-backend`** only (the API that serves `/chat`, `/projects`, `/blogs`, `/work`).
