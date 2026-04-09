@@ -2,7 +2,7 @@ import { useState } from "react";
 import jewelleryCover from "../assets/jewellery-3d.png";
 
 export default function SoftwareSolutionsCard() {
-  const liveUrl = "https://jewellery-software-3-d-experience-6.vercel.app/";
+  const liveUrl = "https://jewellery3d.vercel.app";
 
   return (
     <div
